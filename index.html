@@ -517,10 +517,11 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
 #auth-overlay{
   position:fixed;inset:0;z-index:9000;
   background:var(--bg,#FAF8F3);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
   padding:24px;
   transition:opacity .4s ease;
 }
+#auth-overlay.visible{display:flex;}
 #auth-overlay.hidden{opacity:0;pointer-events:none;}
 .auth-card{
   width:100%;max-width:390px;
@@ -799,7 +800,7 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
     <div class="sec-title">我的功能</div>
     <div class="fgrid">
       <div class="fitem" onclick="navigateTo('page-diary')"><div class="femo">📓</div><div class="flbl">随记</div></div>
-      <div class="fitem" onclick="navigateTo('page-backup')"><div class="femo">☁️</div><div class="flbl">数据备份</div></div>
+      <div class="fitem" onclick="navigateTo('page-setting')"><div class="femo">⚙️</div><div class="flbl">设置</div></div>
       <div class="fitem" onclick="navigateTo('page-help')"><div class="femo">❓</div><div class="flbl">帮助中心</div></div>
     </div>
     <div class="rowbtn" onclick="navigateTo('page-style')"><span>🎨 样式设置</span><span style="color:var(--sub);font-size:20px;">›</span></div>
@@ -1217,37 +1218,7 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
   </div>
 </div>
 
-<!-- PAGE: 数据备份 -->
-<div class="page sub-page" id="page-backup">
-  <div class="hdr">
-    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
-    <div class="hdr-title">☁️ 数据备份</div>
-    <div style="width:40px;"></div>
-  </div>
-  <div class="scroll" style="padding:0 16px 16px;">
-    <div class="card" style="padding:18px;margin-bottom:14px;" id="cloud-account-card">
-      <div style="font-size:14px;font-weight:800;margin-bottom:8px;" id="lbl-cloud-account">☁️ 云端账户</div>
-      <div style="font-size:13px;color:var(--sub);margin-bottom:6px;" id="cloud-account-email">未登录</div>
-      <!-- Email verification status -->
-      <div id="email-verify-row" style="display:none;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <span id="email-verify-status" style="font-size:12px;font-weight:700;"></span>
-        <button id="resend-verify-btn" onclick="doResendVerifyEmail()" style="display:none;font-size:11px;font-weight:700;color:var(--o);background:transparent;border:1.5px solid var(--o);border-radius:14px;padding:4px 10px;cursor:pointer;">重新发送验证邮件</button>
-      </div>
-      <button class="btn-o" style="width:100%;margin-bottom:8px;" onclick="forceSyncFromCloud()" id="btn-force-sync">🔄 从云端拉取最新数据</button>
-      <button onclick="doSignOut()" id="btn-sign-out" style="width:100%;background:transparent;border:2px solid #E05050;border-radius:24px;padding:12px;font-size:14px;font-weight:700;color:#E05050;cursor:pointer;min-height:44px;margin-bottom:8px;">退出登录</button>
-      <button onclick="doDeleteAccount()" id="btn-delete-account" style="width:100%;background:transparent;border:2px solid #E05050;border-radius:24px;padding:12px;font-size:14px;font-weight:700;color:#E05050;cursor:pointer;min-height:44px;opacity:.5;" disabled>🗑️ 注销账号</button>
-    </div>
-    <div class="card" style="padding:24px;text-align:center;">
-      <div style="font-size:52px;margin-bottom:12px;">💾</div>
-      <div style="font-size:15px;font-weight:800;margin-bottom:6px;">本地数据备份</div>
-      <div style="font-size:12px;color:var(--sub);margin-bottom:18px;">导出所有习惯、心愿和奖项数据</div>
-      <button class="btn-y" style="width:100%;margin-bottom:10px;" onclick="exportData()">📤 导出 JSON</button>
-      <label style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px;border:2px solid var(--bdr);border-radius:24px;font-size:14px;font-weight:700;cursor:pointer;">
-        📥 导入数据<input type="file" accept=".json" style="display:none;" onchange="importData(event)">
-      </label>
-    </div>
-  </div>
-</div>
+<!-- PAGE: 数据备份 (已合并到设置页) -->
 
 <!-- PAGE: 设置 -->
 <div class="page sub-page" id="page-setting">
@@ -1260,7 +1231,31 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
     <div class="card" style="padding:18px;margin-bottom:14px;">
       <div class="field"><label>我的昵称</label><input type="text" id="set-nick" placeholder="习惯达人" maxlength="12"></div>
     </div>
-    <button class="btn-y" style="width:100%;margin-bottom:10px;" onclick="saveSettings()">保存</button>
+    <button class="btn-y" style="width:100%;margin-bottom:14px;" onclick="saveSettings()">保存</button>
+
+    <!-- Cloud Account Section -->
+    <div style="font-size:13px;font-weight:800;color:var(--sub);margin-bottom:8px;">☁️ 云端账户</div>
+    <div class="card" style="padding:18px;margin-bottom:14px;" id="cloud-account-card">
+      <div style="font-size:13px;color:var(--sub);margin-bottom:6px;" id="cloud-account-email">未登录</div>
+      <div id="email-verify-row" style="display:none;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span id="email-verify-status" style="font-size:12px;font-weight:700;"></span>
+        <button id="resend-verify-btn" onclick="doResendVerifyEmail()" style="display:none;font-size:11px;font-weight:700;color:var(--o);background:transparent;border:1.5px solid var(--o);border-radius:14px;padding:4px 10px;cursor:pointer;">重新发送验证邮件</button>
+      </div>
+      <button class="btn-o" style="width:100%;margin-bottom:8px;" onclick="forceSyncFromCloud()" id="btn-force-sync">🔄 从云端拉取最新数据</button>
+      <button onclick="doSignOut()" id="btn-sign-out" style="width:100%;background:transparent;border:2px solid #E05050;border-radius:24px;padding:12px;font-size:14px;font-weight:700;color:#E05050;cursor:pointer;min-height:44px;margin-bottom:8px;">退出登录</button>
+      <button onclick="doDeleteAccount()" id="btn-delete-account" style="width:100%;background:transparent;border:2px solid #E05050;border-radius:24px;padding:12px;font-size:14px;font-weight:700;color:#E05050;cursor:pointer;min-height:44px;opacity:.5;" disabled>🗑️ 注销账号</button>
+    </div>
+
+    <!-- Local Backup Section -->
+    <div style="font-size:13px;font-weight:800;color:var(--sub);margin-bottom:8px;">💾 本地数据备份</div>
+    <div class="card" style="padding:18px;margin-bottom:14px;text-align:center;">
+      <div style="font-size:12px;color:var(--sub);margin-bottom:14px;">导出所有习惯、心愿和奖项数据</div>
+      <button class="btn-y" style="width:100%;margin-bottom:10px;" onclick="exportData()">📤 导出 JSON</button>
+      <label style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px;border:2px solid var(--bdr);border-radius:24px;font-size:14px;font-weight:700;cursor:pointer;">
+        📥 导入数据<input type="file" accept=".json" style="display:none;" onchange="importData(event)">
+      </label>
+    </div>
+
     <button onclick="clearAllData()" style="width:100%;background:transparent;border:2px solid #E05050;border-radius:24px;padding:12px;font-size:14px;font-weight:700;color:#E05050;cursor:pointer;min-height:44px;">清空所有数据</button>
   </div>
 </div>
@@ -1397,7 +1392,7 @@ function _pageInitCallbacks(pageName, params) {
     case 'page-records':
       renderRecords(); break;
     case 'page-ledger':
-      renderLedger(); break;
+      _ledgerYear=null;_ledgerMonth=null;renderLedger(); break;
     case 'page-help':
       renderHelp(); break;
     case 'page-msg':
@@ -1742,8 +1737,10 @@ async function doSendResetEmail() {
 }
 
 function doAuthOffline() {
-  document.getElementById('auth-overlay').classList.add('hidden');
-  setTimeout(()=>{ document.getElementById('auth-overlay').style.display='none'; }, 400);
+  const overlay = document.getElementById('auth-overlay');
+  overlay.classList.add('hidden');
+  overlay.classList.remove('visible');
+  setTimeout(()=>{ overlay.style.display='none'; overlay.classList.remove('hidden'); }, 400);
   loadFromLocalAndRender();
 }
 
@@ -1979,7 +1976,8 @@ auth.onAuthStateChanged(async user => {
     // Hide auth overlay
     const overlay = document.getElementById('auth-overlay');
     overlay.classList.add('hidden');
-    setTimeout(()=>{ overlay.style.display='none'; }, 400);
+    overlay.classList.remove('visible');
+    setTimeout(()=>{ overlay.style.display='none'; overlay.classList.remove('hidden'); }, 400);
     // Update account info in backup panel
     const emailEl = document.getElementById('cloud-account-email');
     if(emailEl) emailEl.textContent = (freshUser||user).email || (freshUser||user).uid;
@@ -2005,6 +2003,7 @@ auth.onAuthStateChanged(async user => {
     // Show auth overlay
     const overlay = document.getElementById('auth-overlay');
     overlay.style.display = 'flex';
+    overlay.classList.add('visible');
     overlay.classList.remove('hidden');
     setCloudStatus('hidden');
   }
@@ -2848,16 +2847,24 @@ function renderStats(){
 }
 
 /* ================================================ LEDGER (pts calendar) */
+let _ledgerYear = null, _ledgerMonth = null;
 function renderLedger(){
   const el=document.getElementById('ledger-body');if(!el)return;
-  const now=new Date();const year=now.getFullYear(),month=now.getMonth();
+  const now=new Date();
+  if(_ledgerYear===null){_ledgerYear=now.getFullYear();_ledgerMonth=now.getMonth();}
+  const year=_ledgerYear, month=_ledgerMonth;
   const first=new Date(year,month,1).getDay(),last=new Date(year,month+1,0).getDate();
   const today=todayKey();
   const dayMap={};
   S.ledger.forEach(l=>{if(!dayMap[l.date])dayMap[l.date]=0;dayMap[l.date]+=(l.sign||1)*l.pts;});
   const max=Math.max(1,...Object.values(dayMap).map(Math.abs));
   const wdLabels=S.lang==='en'?['S','M','T','W','T','F','S']:['日','一','二','三','四','五','六'];
-  let calHtml=`<div style="font-size:14px;font-weight:800;margin-bottom:12px;">${year}年${month+1}月</div>
+  const isCurrentMonth=(year===now.getFullYear()&&month===now.getMonth());
+  let calHtml=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <button onclick="ledgerNavMonth(-1)" style="width:34px;height:34px;border-radius:12px;border:1.5px solid var(--bdr);background:var(--card);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s var(--ease-spring);" onpointerdown="this.style.transform='scale(.88)'" onpointerup="this.style.transform=''">‹</button>
+    <div style="font-size:14px;font-weight:800;">${year}${S.lang==='en'?'-':`年`}${S.lang==='en'?String(month+1).padStart(2,'0'):month+1+'月'}</div>
+    <button onclick="ledgerNavMonth(1)" style="width:34px;height:34px;border-radius:12px;border:1.5px solid var(--bdr);background:var(--card);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s var(--ease-spring);${isCurrentMonth?'opacity:.4;pointer-events:none;':''}" onpointerdown="this.style.transform='scale(.88)'" onpointerup="this.style.transform=''">›</button>
+  </div>
   <div class="ledger-grid">${wdLabels.map(d=>`<div class="ledger-day-lbl">${d}</div>`).join('')}`;
   for(let i=0;i<first;i++)calHtml+=`<div class="ledger-cell empty">-</div>`;
   for(let d=1;d<=last;d++){
@@ -2876,6 +2883,18 @@ function renderLedger(){
   <div id="ledger-detail-area"></div>`;
   el.innerHTML=calHtml;showLedgerDay(today);
 }
+function ledgerNavMonth(dir){
+  if(_ledgerYear===null){const n=new Date();_ledgerYear=n.getFullYear();_ledgerMonth=n.getMonth();}
+  _ledgerMonth+=dir;
+  if(_ledgerMonth>11){_ledgerMonth=0;_ledgerYear++;}
+  if(_ledgerMonth<0){_ledgerMonth=11;_ledgerYear--;}
+  // Don't navigate to future months
+  const now=new Date();
+  if(_ledgerYear>now.getFullYear()||(_ledgerYear===now.getFullYear()&&_ledgerMonth>now.getMonth())){
+    _ledgerYear=now.getFullYear();_ledgerMonth=now.getMonth();
+  }
+  renderLedger();
+}
 function showLedgerDay(date){
   const el=document.getElementById('ledger-detail-area');if(!el)return;
   const entries=S.ledger.filter(l=>l.date===date);
@@ -2890,27 +2909,33 @@ function showLedgerDay(date){
 function openMakeup(){
   const h=S.habits.find(x=>x.id===calHabitId);if(!h)return;
   document.getElementById('makeup-title').textContent=(h.emoji||'')+(S.lang==='en'?' Makeup Checkin':' 补卡');
-  document.getElementById('makeup-desc').textContent=S.lang==='en'?'Select a missed date (last 30 days)':'选择要补卡的日期（最近30天内未打卡的日期）';
-  // Build last 30 days list excluding today and already-checked
+  const maxPD=Math.max(1,h.maxCkPerDay||1);
+  document.getElementById('makeup-desc').textContent=S.lang==='en'?`Select a date to makeup (last 30 days, up to ${maxPD}x/day)`:`选择要补卡的日期（最近30天，每日最多${maxPD}次）`;
+  // Build last 30 days list with per-date check count
   const today=new Date();const rows=[];
   for(let i=1;i<=30;i++){
     const d=new Date(today);d.setDate(today.getDate()-i);
     const key=d.toISOString().slice(0,10);
-    rows.push({key,checked:h.checkDates.includes(key)});
+    const existingCount=(h.checkDates||[]).filter(x=>x===key).length;
+    const full=existingCount>=maxPD;
+    rows.push({key,existingCount,maxPD,full});
   }
   const el=document.getElementById('makeup-list');
-  el.innerHTML=rows.map(r=>`<div class="makeup-item${r.checked?' done':''}" onclick="doMakeup('${r.key}',${r.checked})"
-    style="${r.checked?'opacity:.45;cursor:not-allowed;':''}">
-    <div style="font-size:22px;">${r.checked?'✅':'⭕'}</div>
-    <div style="flex:1;font-size:14px;font-weight:700;">${r.key}</div>
-    <div style="font-size:12px;color:var(--sub);">${r.checked?T('alreadyChecked'):T('clickToMakeup')}</div>
+  el.innerHTML=rows.map(r=>`<div class="makeup-item${r.full?' done':''}" onclick="doMakeup('${r.key}',${r.full})"
+    style="${r.full?'opacity:.45;cursor:not-allowed;':''}">
+    <div style="font-size:22px;">${r.full?'✅':r.existingCount>0?'🔸':'⭕'}</div>
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:700;">${r.key}</div>
+      ${maxPD>1?`<div style="font-size:11px;color:var(--sub);">${r.existingCount}/${r.maxPD}次</div>`:''}
+    </div>
+    <div style="font-size:12px;color:var(--sub);">${r.full?T('alreadyChecked'):T('clickToMakeup')}</div>
   </div>`).join('');
   openModal('modal-makeup');
 }
-function doMakeup(key,alreadyChecked){
-  if(alreadyChecked){showToast(T('alreadyChecked'));return;}
+function doMakeup(key,alreadyFull){
+  if(alreadyFull){showToast(T('alreadyChecked'));return;}
   const h=S.habits.find(x=>x.id===calHabitId);if(!h)return;
-  /* 【第三部分-4】校验该日期的已打卡次数是否达到每日上限 */
+  /* 校验该日期的已打卡次数是否达到每日上限 */
   const maxPD=Math.max(1,h.maxCkPerDay||1);
   const existingCount=(h.checkDates||[]).filter(d=>d===key).length;
   if(existingCount>=maxPD){
@@ -2924,7 +2949,16 @@ function doMakeup(key,alreadyChecked){
   S.ledger.unshift({ts:Date.now(),date:key,type:'makeup',name:h.name+'(补卡)',pts:h.pts,sign:1});
   S.records.unshift({date:key,id:h.id,name:h.name,emoji:h.emoji,pts:h.pts,customImg:h.customImg||'',makeup:true});
   save();renderHabits();renderCalendar(h,calViewDate);
-  closeModal('modal-makeup');showToast(T('makeupOk')+' '+key);launchFW();
+  launchFW();
+  // If still can add more, refresh makeup modal; otherwise close it
+  const newCount=existingCount+1;
+  if(newCount<maxPD){
+    showToast(T('makeupOk')+' '+key+` (${newCount}/${maxPD})`);
+    openMakeup(); // refresh to update counts
+  } else {
+    closeModal('modal-makeup');
+    showToast(T('makeupOk')+' '+key);
+  }
 }
 
 /* ================================================ FOCUS 功能已删除（需求第一部分-1）
@@ -3258,7 +3292,7 @@ function openPanel(id){
     'panel-flip-config':'page-flip-config','panel-records':'page-records',
     'panel-ledger':'page-ledger','panel-help':'page-help','panel-msg':'page-msg',
     'panel-diary':'page-diary','panel-style':'page-style','panel-about':'page-about',
-    'panel-backup':'page-backup','panel-setting':'page-setting',
+    'panel-backup':'page-setting','panel-setting':'page-setting',
   };
   const pg = panelToPage[id];
   if(pg) { navigateTo(pg); return; }
@@ -3441,7 +3475,7 @@ function loadDiaryEntryForEdit(entryOrObj){
   }
   document.getElementById('diary-edit-id').value=e.id;
   document.getElementById('diary-date-display').textContent=e.date||todayKey();
-  document.getElementById('diary-time-display').textContent=e.time||'';
+  document.getElementById('diary-time-display').textContent=e.time||new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('diary-title-input').value=e.title||'';
   document.getElementById('diary-content-area').innerHTML=e.content||'';
   document.getElementById('diary-pin-cb').checked=!!e.isPinned;
