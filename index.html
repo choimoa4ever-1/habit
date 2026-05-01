@@ -19,7 +19,6 @@
   --ease-out:cubic-bezier(.25,.46,.45,.94);
   --ease-in-out:cubic-bezier(.45,0,.55,1);
 }
-body.dog{--bg:#FFF8F0;--card:#FFFCF8;--y:#FFB347;--o:#E8843A;--ol:#FFE4C4;--bdr:#5C3A1E;}
 /* DARK MODE */
 body.dark{--bg:#18181C;--card:#24242A;--text:#EFEFEF;--sub:#888;--bdr:#3A3A42;--ol:#302810;}
 body.dark .addcard{border-color:#555;}
@@ -36,8 +35,9 @@ body.dark .ledger-cell.empty{background:#2E2E36;}
 html,body{width:100%;max-width:430px;margin:0 auto;background:var(--bg);
   font-family:'PingFang SC','Helvetica Neue',sans-serif;color:var(--text);
   overflow-x:hidden;min-height:100vh;position:relative;}
+html{background:var(--bg);}/* prevent white strip outside body on desktop */
 /* CUSTOM BG */
-body.has-bg::before{content:'';position:fixed;inset:0;z-index:-1;
+body.has-bg::before{content:'';position:absolute;inset:0;z-index:-1;
   background-image:var(--bg-img,none);background-size:cover;background-position:center;
   opacity:.88;pointer-events:none;}
 body.has-bg{background:transparent!important;}
@@ -93,14 +93,20 @@ input,select,textarea{font-family:inherit;outline:none;border:none;box-sizing:bo
 button{cursor:pointer;background:none;font-family:inherit;}
 
 /* ===== PAGES ===== */
-.page{display:none;flex-direction:column;min-height:100vh;padding-bottom:calc(var(--nav)+8px);}
+.page{display:none;flex-direction:column;min-height:100vh;
+  padding-bottom:calc(var(--nav) + 8px + env(safe-area-inset-bottom, 0px));}
 .page.active{display:flex;animation:pgIn .45s var(--ease-silk) both;}
+.page.sub-page{padding-bottom:calc(8px + env(safe-area-inset-bottom, 0px));}
 @keyframes pgIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
 
 /* ===== BOTTOM NAV ===== */
-.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;
-  height:var(--nav);background:var(--card);border-top:2px solid var(--bdr);
-  display:flex;align-items:center;justify-content:space-around;z-index:300;}
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:430px;
+  height:calc(var(--nav) + env(safe-area-inset-bottom, 0px));
+  padding-bottom:env(safe-area-inset-bottom, 0px);
+  background:var(--card);border-top:2px solid var(--bdr);
+  display:flex;align-items:center;justify-content:space-around;
+  z-index:300;box-sizing:border-box;}
 .ni{display:flex;flex-direction:column;align-items:center;gap:3px;
   min-width:44px;min-height:44px;justify-content:center;cursor:pointer;padding:4px 6px;
   transition:transform .25s var(--ease-spring);}
@@ -242,26 +248,29 @@ button{cursor:pointer;background:none;font-family:inherit;}
 /* ===== PANEL ===== */
 .panel{position:fixed;inset:0;background:var(--bg);z-index:400;
   display:flex;flex-direction:column;overflow:hidden;
-  max-width:430px;left:50%;
-  transform:translateX(calc(-50% + 100%));
+  max-width:430px;left:0;right:0;margin:0 auto;
+  height:100dvh;
+  transform:translateX(100%);
   transition:transform .38s var(--ease-silk);
   pointer-events:none;visibility:hidden;}
-.panel.open{transform:translateX(-50%);pointer-events:all;visibility:visible;}
+.panel.open{transform:translateX(0);pointer-events:all;visibility:visible;}
 .panel-hdr{display:flex;align-items:center;gap:12px;padding:16px;
-  border-bottom:1.5px solid rgba(0,0,0,.07);flex-shrink:0;background:var(--card);}
+  border-bottom:1.5px solid rgba(0,0,0,.07);flex-shrink:0;background:var(--card);
+  z-index:10;position:relative;}
 .panel-back{width:36px;height:36px;display:flex;align-items:center;justify-content:center;
   background:var(--bg);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;font-size:18px;
   transition:transform .22s var(--ease-spring);}
 .panel-back:active{transform:scale(.82);}
 .panel-title{font-size:17px;font-weight:900;flex:1;}
-.panel-body{flex:1;overflow-y:auto;padding:16px;}
+.panel-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;}
 
 /* ===== MODAL ===== */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0);
-  z-index:500;align-items:flex-end;justify-content:center;transition:background .3s;}
+  z-index:500;align-items:flex-end;justify-content:center;transition:background .3s;overflow-y:auto;}
 .overlay.open{display:flex;background:rgba(0,0,0,.48);}
 .modal{background:var(--bg);border-radius:28px 28px 0 0;border:2px solid var(--bdr);border-bottom:none;
-  width:100%;max-width:430px;padding:20px 16px 36px;max-height:88vh;overflow-y:auto;
+  width:100%;max-width:430px;padding:20px 16px 36px;max-height:88dvh;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
   transform:translateY(100%);transition:transform .42s var(--ease-silk);}
 .overlay.open .modal{transform:translateY(0);}
 .modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
@@ -341,7 +350,7 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
 .rec-icon img{width:100%;height:100%;object-fit:cover;}
 
 /* ===== SPINNER ===== */
-.spinner-wrap{position:relative;width:300px;height:300px;margin:0 auto 20px;}
+.spinner-wrap{position:relative;width:min(300px,90vw);height:min(300px,90vw);margin:0 auto 20px;overflow:hidden;}
 .spinner-arrow{position:absolute;top:-20px;left:50%;transform:translateX(-50%);
   font-size:28px;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));}
 .spin-btn{width:60px;height:60px;border-radius:50%;background:#fff;border:3px solid var(--bdr);
@@ -426,19 +435,13 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
 .about-row:active{color:var(--o);}
 
 /* ===== TOAST ===== */
-.toast{position:fixed;bottom:calc(var(--nav)+18px);left:50%;
+.toast{position:fixed;bottom:calc(var(--nav) + 18px + env(safe-area-inset-bottom, 0px));left:50%;
   transform:translateX(-50%) translateY(10px);
   background:rgba(26,26,26,.92);color:#fff;padding:10px 22px;border-radius:20px;
   font-size:14px;z-index:9998;pointer-events:none;
   opacity:0;transition:opacity .28s,transform .28s var(--ease-spring);
   white-space:nowrap;max-width:300px;text-align:center;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
-/* ===== DOG DECO ===== */
-.dog-deco{display:none;position:fixed;bottom:calc(var(--nav)+4px);right:8px;z-index:150;pointer-events:none;
-  animation:dogBounce 2.5s ease-in-out infinite;}
-@keyframes dogBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-body.dog .dog-deco{display:block;}
 
 /* ===== SPIN ITEM ROW ===== */
 .spin-item-row{display:flex;align-items:center;gap:8px;padding:8px 12px;
@@ -469,7 +472,7 @@ body.dog .dog-deco{display:block;}
 .diary-content-area:empty::before{content:attr(data-placeholder);color:var(--sub);}
 .diary-content-area img{max-width:100%;border-radius:10px;margin:4px 0;display:block;}
 .diary-toolbar{display:flex;gap:8px;align-items:center;background:var(--card);
-  border:1.5px solid var(--bdr);border-radius:14px;padding:8px 12px;margin-bottom:10px;}
+  border:1.5px solid var(--bdr);border-radius:14px;padding:8px 12px;margin-bottom:10px;position:relative;}
 .diary-tool-btn{font-size:20px;padding:6px 8px;border-radius:10px;cursor:pointer;
   transition:all .2s var(--ease-spring);border:1.5px solid transparent;}
 .diary-tool-btn:active{background:var(--ol);transform:scale(.85);}
@@ -488,8 +491,9 @@ body.dog .dog-deco{display:block;}
   background:transparent;border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;
   justify-content:center;color:var(--sub);opacity:0.55;transition:opacity .2s,background .2s,transform .2s;}
 .diary-del-btn:active{opacity:1;background:rgba(224,80,80,.12);transform:scale(.88);}
-.diary-entry-card{position:relative;}
-  padding:14px;margin-bottom:10px;box-shadow:2px 2px 0 var(--bdr);cursor:pointer;
+.diary-entry-card{position:relative;padding:14px;margin-bottom:10px;
+  background:var(--card);border:1.5px solid var(--bdr);border-radius:18px;
+  box-shadow:2px 2px 0 var(--bdr);cursor:pointer;
   transition:transform .2s var(--ease-spring),box-shadow .2s;}
 .diary-entry-card:active{transform:translate(2px,2px);box-shadow:0 0 0 var(--bdr);}
 .diary-entry-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
@@ -558,9 +562,14 @@ body.dog .dog-deco{display:block;}
   padding:8px 12px;margin-bottom:10px;display:none;text-align:center;
 }
 .auth-err.show{display:block;}
-.auth-sync-banner{
-  margin-top:16px;font-size:11px;color:var(--sub,#999);text-align:center;
+.auth-ok{
+  font-size:12px;color:#3a7d44;font-weight:600;
+  background:#edfaed;border:1px solid #a8e0b0;border-radius:10px;
+  padding:8px 12px;margin-bottom:10px;display:none;text-align:center;
 }
+.auth-ok.show{display:block;}
+.pw-eye{position:absolute;right:12px;bottom:11px;font-size:16px;cursor:pointer;user-select:none;opacity:.55;transition:opacity .2s;}
+.pw-eye:hover{opacity:1;}
 .cloud-status{
   position:fixed;top:12px;right:12px;z-index:8999;
   background:var(--card,#FFFDF8);border:1.5px solid var(--bdr,#2C2C2C);
@@ -578,6 +587,7 @@ body.dog .dog-deco{display:block;}
 </style>
 </head>
 <body>
+
 <canvas id="fw-canvas"></canvas>
 
 <!-- ==================== FIREBASE AUTH OVERLAY ==================== -->
@@ -586,24 +596,71 @@ body.dog .dog-deco{display:block;}
     <div class="auth-logo">
       <span class="icon">🌱</span>
       <div class="name">习惯打卡</div>
-      <div class="sub">登录后多设备同步你的打卡数据</div>
+      <div class="sub" id="auth-sub-lbl">登录后多设备同步你的打卡数据</div>
     </div>
-    <div class="auth-tabs">
+    <!-- Login / Register tabs (hidden in forgot-password mode) -->
+    <div class="auth-tabs" id="auth-tabs-row">
       <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">登录</div>
       <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">注册</div>
     </div>
     <div class="auth-err" id="auth-err"></div>
-    <div class="auth-field">
-      <label>邮箱</label>
-      <input type="email" id="auth-email" placeholder="your@email.com" autocomplete="email">
+    <div class="auth-ok" id="auth-ok"></div>
+
+    <!-- ===== MAIN LOGIN / REGISTER FORM ===== -->
+    <div id="auth-main-form">
+      <div class="auth-field">
+        <label id="lbl-email">邮箱</label>
+        <input type="email" id="auth-email" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="auth-field" style="position:relative;">
+        <label id="lbl-pass">密码</label>
+        <input type="password" id="auth-pass" placeholder="6位以上密码" autocomplete="current-password" onkeydown="if(event.key==='Enter'&&_authMode!=='register')doAuthAction()" style="padding-right:42px;">
+        <span class="pw-eye" onclick="togglePwEye('auth-pass',this)" title="显示/隐藏密码">👁</span>
+      </div>
+      <!-- Confirm password (register only) -->
+      <div class="auth-field" id="field-confirm-pass" style="display:none;position:relative;">
+        <label id="lbl-confirm-pass">确认密码</label>
+        <input type="password" id="auth-pass-confirm" placeholder="再次输入密码" style="padding-right:42px;">
+        <span class="pw-eye" onclick="togglePwEye('auth-pass-confirm',this)" title="显示/隐藏密码">👁</span>
+      </div>
+      <!-- Invite code (register only) -->
+      <div class="auth-field" id="field-invite-code" style="display:none;">
+        <label id="lbl-invite">邀请码</label>
+        <input type="text" id="auth-invite" placeholder="请输入邀请码" autocomplete="off">
+      </div>
+      <!-- Forgot password link (login only) -->
+      <div id="forgot-link-row" style="text-align:right;margin-top:-4px;margin-bottom:10px;">
+        <span style="font-size:12px;color:var(--o);cursor:pointer;font-weight:700;" onclick="switchAuthTab('forgot')">忘记密码？</span>
+      </div>
+      <button class="auth-btn" onclick="doAuthAction()" id="auth-action-btn">🚀 登录</button>
+      <button class="auth-btn secondary" onclick="doAuthOffline()">离线使用（不同步）</button>
     </div>
-    <div class="auth-field">
-      <label>密码</label>
-      <input type="password" id="auth-pass" placeholder="6位以上密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')doAuthAction()">
+
+    <!-- ===== FORGOT PASSWORD FORM ===== -->
+    <div id="auth-forgot-form" style="display:none;">
+      <div class="auth-field">
+        <label id="lbl-reset-email">注册邮箱</label>
+        <input type="email" id="auth-reset-email" placeholder="your@email.com">
+      </div>
+      <button class="auth-btn" onclick="doSendResetEmail()" id="auth-reset-btn">📧 发送重置邮件</button>
+      <div style="text-align:center;margin-top:12px;">
+        <span style="font-size:12px;color:var(--o);cursor:pointer;font-weight:700;" onclick="switchAuthTab('login')">← 返回登录</span>
+      </div>
     </div>
-    <button class="auth-btn" onclick="doAuthAction()" id="auth-action-btn">🚀 登录</button>
-    <button class="auth-btn secondary" onclick="doAuthOffline()">离线使用（不同步）</button>
-    <div class="auth-sync-banner">☁️ 数据安全存储在 Firebase · 随时随地同步</div>
+
+    <div class="auth-sync-banner" id="auth-sync-banner">☁️ 数据安全存储在 Firebase · 随时随地同步</div>
+  </div>
+</div>
+
+<!-- ==================== CUSTOM CONFIRM DIALOG ==================== -->
+<div id="custom-confirm-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--card);border:2.5px solid var(--bdr);border-radius:24px;box-shadow:6px 6px 0 var(--bdr);padding:28px 22px;max-width:340px;width:100%;">
+    <div style="font-size:18px;font-weight:900;margin-bottom:10px;" id="ccd-title">确认操作</div>
+    <div style="font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:20px;" id="ccd-msg"></div>
+    <div style="display:flex;gap:10px;">
+      <button id="ccd-cancel" onclick="customConfirmResolve(false)" style="flex:1;padding:12px;border:2px solid var(--bdr);border-radius:20px;font-size:14px;font-weight:700;background:transparent;cursor:pointer;">取消</button>
+      <button id="ccd-ok" onclick="customConfirmResolve(true)" style="flex:1;padding:12px;border:2px solid var(--bdr);border-radius:20px;font-size:14px;font-weight:800;background:var(--y);cursor:pointer;">确认</button>
+    </div>
   </div>
 </div>
 
@@ -616,7 +673,7 @@ body.dog .dog-deco{display:block;}
 <!-- ==================== HOME ==================== -->
 <div class="page active" id="page-home">
   <div class="hdr">
-    <div class="icon-btn" onclick="openPanel('panel-msg')">
+    <div class="icon-btn" onclick="navigateTo('page-msg')">
       <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
         <rect x="3" y="7" width="20" height="14" rx="3" stroke="#2C2C2C" stroke-width="2" fill="#FDE8C8"/>
         <polyline points="3,8 13,15 23,8" stroke="#2C2C2C" stroke-width="2" fill="none"/>
@@ -625,7 +682,6 @@ body.dog .dog-deco{display:block;}
     </div>
     <div style="font-size:18px;font-weight:900;">🌟 今日打卡</div>
     <div class="ddwrap">
-      <!-- 【第二部分-2】下拉筛选：ddtrig文字和ddopt文字由selFilter动态更新，支持语言切换 -->
       <div class="ddtrig" onclick="toggleDD()"><span id="dd-text">未打卡</span><span style="font-size:10px;margin-left:2px;">▾</span></div>
       <div class="ddmenu" id="dd-menu">
         <div class="ddopt" onclick="selFilter('all')" id="ddopt-all">全部</div>
@@ -640,7 +696,6 @@ body.dog .dog-deco{display:block;}
     <span class="x" onclick="this.parentElement.style.display='none'">✕</span>
   </div>
   <div class="scroll">
-    <!-- Schedule Section -->
     <div class="schedule-section" id="schedule-section" style="display:none;">
       <div class="schedule-title">📌 即将到来</div>
       <div id="schedule-list"></div>
@@ -661,13 +716,10 @@ body.dog .dog-deco{display:block;}
   </div>
 </div>
 
-<!-- ==================== FOCUS 页面已删除（需求第一部分-1）==================== -->
-
 <!-- ==================== STATS ==================== -->
 <div class="page" id="page-stats">
   <div class="hdr"><div class="hdr-title" id="stats-title">📊 数据统计</div></div>
   <div class="scroll" style="padding:0 16px 16px;">
-    <!-- Enhanced chart with period toggle -->
     <div class="card" style="padding:16px;margin-bottom:14px;">
       <div class="week-meta">
         <div style="font-size:14px;font-weight:800;" id="week-title">本周打卡</div>
@@ -708,7 +760,7 @@ body.dog .dog-deco{display:block;}
 <div class="page" id="page-my">
   <div class="hdr">
     <div class="hdr-title">👤 我的</div>
-    <div class="icon-btn" onclick="openPanel('panel-setting')">
+    <div class="icon-btn" onclick="navigateTo('page-setting')">
       <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
         <circle cx="13" cy="13" r="3.5" stroke="#2C2C2C" stroke-width="2"/>
         <path d="M13 3v3M13 20v3M3 13h3M20 13h3M5.6 5.6l2.1 2.1M18.3 18.3l2.1 2.1M5.6 20.4l2.1-2.1M18.3 7.7l2.1-2.1" stroke="#2C2C2C" stroke-width="2" stroke-linecap="round"/>
@@ -718,27 +770,27 @@ body.dog .dog-deco{display:block;}
   <div class="scroll">
     <div class="ucard">
       <div class="urow">
-        <div class="avatar" id="avatar-btn" onclick="openModal('modal-avatar')">🐻</div>
+        <div class="avatar" id="avatar-btn" onclick="navigateTo('page-avatar')">🐻</div>
         <div>
           <h3 id="my-nick" style="font-size:15px;font-weight:800;margin-bottom:3px;">习惯达人</h3>
           <p style="font-size:12px;color:var(--sub);line-height:1.5;">打卡积累努力值<br>在心愿商城兑换奖励！</p>
         </div>
       </div>
       <div class="srow">
-        <div class="sbox" onclick="openPanel('panel-ledger')"><div class="snum" id="my-days">0</div><div class="slbl">打卡天数</div></div>
-        <div class="sbox" onclick="openPanel('panel-ledger')"><div class="snum" id="my-pts" style="color:var(--o);">0</div><div class="slbl">⚡ 努力值</div><div style="font-size:9px;color:var(--sub);margin-top:2px;" id="ledger-hint">点击查看明细</div></div>
+        <div class="sbox" onclick="navigateTo('page-ledger')"><div class="snum" id="my-days">0</div><div class="slbl">打卡天数</div></div>
+        <div class="sbox" onclick="navigateTo('page-ledger')"><div class="snum" id="my-pts" style="color:var(--o);">0</div><div class="slbl">⚡ 努力值</div><div style="font-size:9px;color:var(--sub);margin-top:2px;" id="ledger-hint">点击查看明细</div></div>
         <div class="sbox"><div class="snum" id="my-habits">0</div><div class="slbl">习惯数</div></div>
       </div>
     </div>
-    <div class="rowbtn" style="background:var(--ol);" onclick="openPanel('panel-wish')">
+    <div class="rowbtn" style="background:var(--ol);" onclick="navigateTo('page-wish')">
       <span>🛍️ 心愿商城</span><span style="color:var(--sub);font-size:20px;">›</span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 16px 0;">
-      <div onclick="openPanel('panel-spinner')" style="background:linear-gradient(135deg,var(--y),var(--o));border:2px solid var(--bdr);border-radius:18px;padding:16px;text-align:center;cursor:pointer;box-shadow:3px 3px 0 var(--bdr);transition:transform .2s var(--ease-spring);" onpointerdown="this.style.transform='translate(2px,2px)'" onpointerup="this.style.transform=''">
+      <div onclick="navigateTo('page-spinner')" style="background:linear-gradient(135deg,var(--y),var(--o));border:2px solid var(--bdr);border-radius:18px;padding:16px;text-align:center;cursor:pointer;box-shadow:3px 3px 0 var(--bdr);transition:transform .2s var(--ease-spring);" onpointerdown="this.style.transform='translate(2px,2px)'" onpointerup="this.style.transform=''">
         <div style="font-size:32px;margin-bottom:6px;">🎡</div>
         <div style="font-size:13px;font-weight:900;color:#fff;text-shadow:1px 1px 0 rgba(0,0,0,.15);">幸运转盘</div>
       </div>
-      <div onclick="openPanel('panel-flip')" style="background:linear-gradient(135deg,#a8edea,#fed6e3);border:2px solid var(--bdr);border-radius:18px;padding:16px;text-align:center;cursor:pointer;box-shadow:3px 3px 0 var(--bdr);transition:transform .2s var(--ease-spring);" onpointerdown="this.style.transform='translate(2px,2px)'" onpointerup="this.style.transform=''">
+      <div onclick="navigateTo('page-flip')" style="background:linear-gradient(135deg,#a8edea,#fed6e3);border:2px solid var(--bdr);border-radius:18px;padding:16px;text-align:center;cursor:pointer;box-shadow:3px 3px 0 var(--bdr);transition:transform .2s var(--ease-spring);" onpointerdown="this.style.transform='translate(2px,2px)'" onpointerup="this.style.transform=''">
         <div style="font-size:32px;margin-bottom:6px;">🃏</div>
         <div style="font-size:13px;font-weight:900;color:#2C2C2C;">翻牌抽奖</div>
       </div>
@@ -746,19 +798,18 @@ body.dog .dog-deco{display:block;}
     <div style="height:10px;"></div>
     <div class="sec-title">我的功能</div>
     <div class="fgrid">
-      <div class="fitem" onclick="openPanel('panel-diary')"><div class="femo">📓</div><div class="flbl">随记</div></div>
-      <div class="fitem" onclick="openPanel('panel-backup')"><div class="femo">☁️</div><div class="flbl">数据备份</div></div>
-      <div class="fitem" onclick="openPanel('panel-help')"><div class="femo">❓</div><div class="flbl">帮助中心</div></div>
+      <div class="fitem" onclick="navigateTo('page-diary')"><div class="femo">📓</div><div class="flbl">随记</div></div>
+      <div class="fitem" onclick="navigateTo('page-backup')"><div class="femo">☁️</div><div class="flbl">数据备份</div></div>
+      <div class="fitem" onclick="navigateTo('page-help')"><div class="femo">❓</div><div class="flbl">帮助中心</div></div>
     </div>
-    <div class="rowbtn" onclick="openPanel('panel-style')"><span>🎨 样式设置</span><span style="color:var(--sub);font-size:20px;">›</span></div>
-    <div class="rowbtn" onclick="openPanel('panel-about')"><span>ℹ️ 关于我们</span><span style="color:var(--sub);font-size:20px;">›</span></div>
-    <!-- 【已删除】我的成就板块（需求第一部分-2） -->
+    <div class="rowbtn" onclick="navigateTo('page-style')"><span>🎨 样式设置</span><span style="color:var(--sub);font-size:20px;">›</span></div>
+    <div class="rowbtn" onclick="navigateTo('page-about')"><span>ℹ️ 关于我们</span><span style="color:var(--sub);font-size:20px;">›</span></div>
     <div style="height:8px;"></div>
   </div>
 </div>
 
 <!-- ==================== BOTTOM NAV ==================== -->
-<nav class="bnav">
+<nav class="bnav" id="bnav">
   <div class="ni on" id="nav-home" onclick="switchPage('home')">
     <svg viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" class="fa" fill="#FDE8C8" stroke="#2C2C2C" stroke-width="2"/><rect x="9" y="14" width="6" height="7" rx="1" stroke="#2C2C2C" stroke-width="1.5" fill="none"/></svg>
     <span>首页</span>
@@ -767,7 +818,6 @@ body.dog .dog-deco{display:block;}
     <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="2" class="fa" fill="#FDE8C8" stroke="#2C2C2C" stroke-width="2"/><rect x="13" y="3" width="8" height="8" rx="2" fill="none" stroke="#2C2C2C" stroke-width="2"/><rect x="3" y="13" width="8" height="8" rx="2" fill="none" stroke="#2C2C2C" stroke-width="2"/><rect x="13" y="13" width="8" height="8" rx="2" fill="none" stroke="#2C2C2C" stroke-width="2"/></svg>
     <span>全部</span>
   </div>
-  <!-- 【已删除】专注导航按钮（需求第一部分-1） -->
   <div class="ni" id="nav-stats" onclick="switchPage('stats')">
     <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="14" width="4" height="7" rx="1" class="fa" fill="#FDE8C8" stroke="#2C2C2C" stroke-width="1.8"/><rect x="10" y="9" width="4" height="12" rx="1" fill="none" stroke="#2C2C2C" stroke-width="1.8"/><rect x="17" y="4" width="4" height="17" rx="1" fill="none" stroke="#2C2C2C" stroke-width="1.8"/></svg>
     <span>统计</span>
@@ -778,14 +828,46 @@ body.dog .dog-deco{display:block;}
   </div>
 </nav>
 
-<!-- ==================== MODALS ==================== -->
-<!-- HABIT MODAL -->
-<div class="overlay" id="modal-habit" onclick="if(event.target===this)closeModal('modal-habit')">
+<!-- ==================== MODALS (保留为弹窗) ==================== -->
+<!-- CALENDAR MODAL -->
+<div class="overlay" id="modal-cal" onclick="if(event.target===this)closeModal('modal-cal')">
   <div class="modal">
     <div class="modal-hdr">
-      <div class="modal-title" id="h-modal-title">添加习惯</div>
-      <div class="modal-close" onclick="closeModal('modal-habit')">✕</div>
+      <div class="modal-title" id="cal-title">打卡日历</div>
+      <div class="modal-close" onclick="closeModal('modal-cal')">✕</div>
     </div>
+    <div class="cal-wrap" id="cal-body"></div>
+    <div style="display:flex;gap:12px;margin-top:14px;font-size:12px;color:var(--sub);align-items:center;">
+      <div style="width:16px;height:16px;border-radius:50%;background:var(--y);display:inline-block;"></div>已打卡
+      <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--bdr);display:inline-block;"></div>今天
+    </div>
+    <button class="btn-o" style="width:100%;margin-top:14px;" id="cal-undo-btn" onclick="undoTodayCheckin()">↩ 撤销今日最后一次打卡</button>
+    <button class="btn-o" style="width:100%;margin-top:8px;" onclick="openMakeup()">📅 补卡（补填历史打卡）</button>
+  </div>
+</div>
+
+<!-- MAKEUP MODAL -->
+<div class="overlay" id="modal-makeup" onclick="if(event.target===this)closeModal('modal-makeup')">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="makeup-title">补卡</div>
+      <div class="modal-close" onclick="closeModal('modal-makeup')">✕</div>
+    </div>
+    <p style="font-size:13px;color:var(--sub);margin-bottom:14px;" id="makeup-desc">选择要补卡的日期（最近30天内未打卡）</p>
+    <div class="makeup-list" id="makeup-list"></div>
+  </div>
+</div>
+
+<!-- ==================== SUB PAGES ==================== -->
+
+<!-- PAGE: 添加/编辑习惯 -->
+<div class="page sub-page" id="page-habit">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title" id="h-modal-title">添加习惯</div>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="scroll" style="padding:0 16px 16px;">
     <div class="field"><label>习惯名称</label><input type="text" id="h-name" placeholder="如：早起晨跑" maxlength="12"></div>
     <div class="field">
       <label>图标</label>
@@ -810,13 +892,14 @@ body.dog .dog-deco{display:block;}
   </div>
 </div>
 
-<!-- WISH MODAL -->
-<div class="overlay" id="modal-wish" onclick="if(event.target===this)closeModal('modal-wish')">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-title" id="w-modal-title">添加心愿</div>
-      <div class="modal-close" onclick="closeModal('modal-wish')">✕</div>
-    </div>
+<!-- PAGE: 添加/编辑心愿 -->
+<div class="page sub-page" id="page-wish-edit">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title" id="w-modal-title">添加心愿</div>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="scroll" style="padding:0 16px 16px;">
     <div class="field"><label>心愿名称</label><input type="text" id="w-name" placeholder="如：买一双球鞋" maxlength="16"></div>
     <div class="field"><label>心愿描述（选填）</label><textarea id="w-desc" placeholder="描述一下…"></textarea></div>
     <div class="field">
@@ -840,60 +923,14 @@ body.dog .dog-deco{display:block;}
   </div>
 </div>
 
-<!-- CALENDAR MODAL (habit check history) -->
-<div class="overlay" id="modal-cal" onclick="if(event.target===this)closeModal('modal-cal')">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-title" id="cal-title">打卡日历</div>
-      <div class="modal-close" onclick="closeModal('modal-cal')">✕</div>
-    </div>
-    <div class="cal-wrap" id="cal-body"></div>
-    <div style="display:flex;gap:12px;margin-top:14px;font-size:12px;color:var(--sub);align-items:center;">
-      <div style="width:16px;height:16px;border-radius:50%;background:var(--y);display:inline-block;"></div>已打卡
-      <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--bdr);display:inline-block;"></div>今天
-    </div>
-    <!-- Undo button -->
-    <button class="btn-o" style="width:100%;margin-top:14px;" id="cal-undo-btn" onclick="undoTodayCheckin()" style="display:none;">↩ 撤销今日最后一次打卡</button>
-    <button class="btn-o" style="width:100%;margin-top:8px;" onclick="openMakeup()">📅 补卡（补填历史打卡）</button>
+<!-- PAGE: 转盘项目编辑 -->
+<div class="page sub-page" id="page-spin-item">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title" id="si-modal-title">添加转盘项目</div>
+    <div style="width:40px;"></div>
   </div>
-</div>
-
-<!-- MAKEUP MODAL -->
-<div class="overlay" id="modal-makeup" onclick="if(event.target===this)closeModal('modal-makeup')">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-title" id="makeup-title">补卡</div>
-      <div class="modal-close" onclick="closeModal('modal-makeup')">✕</div>
-    </div>
-    <p style="font-size:13px;color:var(--sub);margin-bottom:14px;" id="makeup-desc">选择要补卡的日期（最近30天内未打卡）</p>
-    <div class="makeup-list" id="makeup-list"></div>
-  </div>
-</div>
-
-<!-- AVATAR MODAL -->
-<div class="overlay" id="modal-avatar" onclick="if(event.target===this)closeModal('modal-avatar')">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-title">选择头像</div>
-      <div class="modal-close" onclick="closeModal('modal-avatar')">✕</div>
-    </div>
-    <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:10px;">默认头像</div>
-    <div class="avatar-emoji-grid" id="avatar-emoji-grid"></div>
-    <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;margin-top:4px;">上传自定义头像</div>
-    <label class="upload-label">
-      📷 从相册上传
-      <input type="file" accept="image/*" id="avatar-img-input" style="display:none;">
-    </label>
-  </div>
-</div>
-
-<!-- SPINNER ITEM MODAL -->
-<div class="overlay" id="modal-spin-item" onclick="if(event.target===this)closeModal('modal-spin-item')">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-title" id="si-modal-title">添加转盘项目</div>
-      <div class="modal-close" onclick="closeModal('modal-spin-item')">✕</div>
-    </div>
+  <div class="scroll" style="padding:0 16px 16px;">
     <div class="field"><label>类型</label>
       <select id="si-type" style="width:100%;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:11px 14px;font-size:14px;" onchange="onSpinTypeChange()">
         <option value="pts_add">加努力值 ⚡+</option>
@@ -918,13 +955,14 @@ body.dog .dog-deco{display:block;}
   </div>
 </div>
 
-<!-- FLIP ITEM MODAL -->
-<div class="overlay" id="modal-flip-item" onclick="if(event.target===this)closeModal('modal-flip-item')">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-title" id="fi-modal-title">编辑牌面</div>
-      <div class="modal-close" onclick="closeModal('modal-flip-item')">✕</div>
-    </div>
+<!-- PAGE: 牌面编辑 -->
+<div class="page sub-page" id="page-flip-item">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title" id="fi-modal-title">编辑牌面</div>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="scroll" style="padding:0 16px 16px;">
     <div class="field"><label>类型</label>
       <select id="fi-type" style="width:100%;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:11px 14px;font-size:14px;" onchange="onFlipTypeChange()">
         <option value="pts_add">加努力值 ⚡+</option>
@@ -944,16 +982,32 @@ body.dog .dog-deco{display:block;}
   </div>
 </div>
 
-<!-- ==================== PANELS ==================== -->
+<!-- PAGE: 头像选择 -->
+<div class="page sub-page" id="page-avatar">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">选择头像</div>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="scroll" style="padding:0 16px 16px;">
+    <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:10px;">默认头像</div>
+    <div class="avatar-emoji-grid" id="avatar-emoji-grid"></div>
+    <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;margin-top:16px;">上传自定义头像</div>
+    <label class="upload-label">
+      📷 从相册上传
+      <input type="file" accept="image/*" id="avatar-img-input" style="display:none;">
+    </label>
+  </div>
+</div>
 
-<!-- WISH MALL -->
-<div class="panel" id="panel-wish">
-  <div class="panel-hdr">
-    <div class="panel-back" onclick="closePanel('panel-wish')">‹</div>
-    <div class="panel-title">🛍️ 心愿商城</div>
+<!-- PAGE: 心愿商城 -->
+<div class="page sub-page" id="page-wish">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">🛍️ 心愿商城</div>
     <button class="btn-y" style="padding:7px 14px;font-size:12px;" onclick="openAddWish()">＋ 添加</button>
   </div>
-  <div class="panel-body">
+  <div class="scroll" style="padding:0 16px 16px;">
     <div class="pts-banner">
       <span style="font-size:30px;">⚡</span>
       <div><div style="font-size:22px;font-weight:900;color:#fff;text-shadow:1px 1px 0 rgba(0,0,0,.15);" id="mall-pts">0</div><div style="font-size:12px;color:rgba(255,255,255,.82);">当前可用努力值</div></div>
@@ -964,17 +1018,100 @@ body.dog .dog-deco{display:block;}
   </div>
 </div>
 
-<!-- SPINNER -->
-<div class="panel" id="panel-spinner">
-  <div class="panel-hdr">
-    <div class="panel-back" onclick="closePanel('panel-spinner')">‹</div>
-    <div class="panel-title">🎡 幸运转盘</div>
+<!-- PAGE: 样式设置 -->
+<div class="page sub-page" id="page-style">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title" id="style-title">🎨 样式设置</div>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="scroll" style="padding:0 16px 16px;">
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px;" id="style-mode-lbl">显示模式</div>
+    <div class="mode-row">
+      <div class="mode-btn" id="mode-auto" onclick="setMode('auto')">☀️🌙 跟随系统</div>
+      <div class="mode-btn" id="mode-light" onclick="setMode('light')">☀️ 日间</div>
+      <div class="mode-btn active" id="mode-dark" onclick="setMode('dark')">🌙 夜间</div>
+    </div>
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px;" id="style-bg-lbl">背景设置</div>
+    <div class="bg-grid" id="bg-grid"></div>
+    <label class="upload-label" style="margin-bottom:16px;">
+      📷 从相册上传背景图
+      <input type="file" accept="image/*" id="bg-img-input" style="display:none;">
+    </label>
+    <div style="font-size:13px;font-weight:800;margin-bottom:10px;" id="style-lang-lbl">语言 / Language</div>
+    <div class="card" style="padding:14px;">
+      <div style="display:flex;gap:8px;">
+        <button class="btn-y" id="lang-zh" style="flex:1;" onclick="setLang('zh')">中文</button>
+        <button class="btn-o" id="lang-en" style="flex:1;" onclick="setLang('en')">English</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: 随记 -->
+<div class="page sub-page" id="page-diary">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">📓 随记</div>
+    <button class="btn-y" style="padding:7px 14px;font-size:12px;" onclick="diaryNewEntry()">＋ 新建</button>
+  </div>
+  <div style="padding:12px 16px 0;background:var(--card);border-bottom:1.5px solid rgba(0,0,0,.07);">
+    <div class="diary-panel-tabs">
+      <div class="diary-tab active" id="dtab-list" onclick="switchDiaryTab('list')">📋 日记列表</div>
+      <div class="diary-tab" id="dtab-edit" onclick="switchDiaryTab('edit')">✏️ 编辑</div>
+    </div>
+  </div>
+  <div class="scroll" id="diary-list-view" style="padding:16px;">
+    <div id="diary-entries-list"><div style="text-align:center;padding:48px 0;color:var(--sub);font-size:14px;">暂无随记，点击右上角新建 📝</div></div>
+  </div>
+  <div class="scroll" id="diary-edit-view" style="display:none;padding:16px;position:relative;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="diary-date-btn" id="diary-date-btn" onclick="openDiaryDatePicker()">
+        <span class="gear">⚙️</span>
+        <span id="diary-date-display">2026-04-14</span>
+      </div>
+      <div style="font-size:12px;color:var(--sub);" id="diary-time-display">14:30</div>
+    </div>
+    <input type="date" id="diary-date-input" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;" onchange="onDiaryDateChange()">
+    <div class="diary-weather-row" id="diary-weather-row">
+      <div class="diary-weather-opt sel" data-w="☀️" onclick="selectWeather(this)">☀️</div>
+      <div class="diary-weather-opt" data-w="🌤️" onclick="selectWeather(this)">🌤️</div>
+      <div class="diary-weather-opt" data-w="☁️" onclick="selectWeather(this)">☁️</div>
+      <div class="diary-weather-opt" data-w="🌧️" onclick="selectWeather(this)">🌧️</div>
+      <div class="diary-weather-opt" data-w="⛈️" onclick="selectWeather(this)">⛈️</div>
+      <div class="diary-weather-opt" data-w="❄️" onclick="selectWeather(this)">❄️</div>
+      <div class="diary-weather-opt" data-w="🌈" onclick="selectWeather(this)">🌈</div>
+      <div class="diary-weather-opt" data-w="🌫️" onclick="selectWeather(this)">🌫️</div>
+    </div>
+    <input type="text" class="diary-title-input" id="diary-title-input" placeholder="标题" maxlength="40">
+    <div class="diary-content-area" id="diary-content-area" contenteditable="true" data-placeholder="写点什么吧…支持 emoji 和图片 🌟"></div>
+    <div class="diary-toolbar" style="position:relative;">
+      <div class="diary-tool-btn" title="插入图片" onclick="triggerDiaryImg()">🖼️</div>
+      <div class="diary-tool-btn" title="插入Emoji" onclick="toggleDiaryEmojiPanel()">😊</div>
+      <div style="flex:1;"></div>
+      <button class="btn-y" style="padding:8px 20px;font-size:13px;" onclick="saveDiaryEntry()">💾 保存</button>
+      <div class="diary-emoji-panel" id="diary-emoji-panel"></div>
+    </div>
+    <div class="diary-pin-row" id="diary-pin-row" style="display:none;">
+      <input type="checkbox" id="diary-pin-cb">
+      <label for="diary-pin-cb" style="font-size:13px;font-weight:700;cursor:pointer;">📌 在首页显示为日程（仅限未来日期）</label>
+    </div>
+    <input type="file" id="diary-img-file" accept="image/*" style="display:none;" onchange="onDiaryImgSelected(event)">
+    <input type="hidden" id="diary-edit-id" value="">
+  </div>
+</div>
+
+<!-- PAGE: 幸运转盘 -->
+<div class="page sub-page" id="page-spinner">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">🎡 幸运转盘</div>
     <button class="btn-y" style="padding:7px 12px;font-size:12px;" onclick="openAddSpinItem()">＋ 添加</button>
   </div>
-  <div class="panel-body">
+  <div class="scroll" style="padding:0 16px 16px;">
     <div class="spinner-wrap">
       <div class="spinner-arrow">▼</div>
-      <canvas id="spinner-canvas" width="600" height="600" style="width:300px;height:300px;border-radius:50%;border:4px solid var(--bdr);box-shadow:0 6px 24px rgba(0,0,0,.14);display:block;"></canvas>
+      <canvas id="spinner-canvas" width="600" height="600" style="width:min(300px,90vw);height:min(300px,90vw);border-radius:50%;border:4px solid var(--bdr);box-shadow:0 6px 24px rgba(0,0,0,.14);display:block;max-width:100%;"></canvas>
       <button class="spin-btn" id="spin-btn" onclick="doSpin()">🎰</button>
     </div>
     <div class="spin-result" id="spin-result">点击中心按钮开始旋转 🎡</div>
@@ -987,11 +1124,11 @@ body.dog .dog-deco{display:block;}
   </div>
 </div>
 
-<!-- FLIP -->
-<div class="panel" id="panel-flip">
-  <div class="panel-hdr">
-    <div class="panel-back" onclick="closePanel('panel-flip')">‹</div>
-    <div class="panel-title">🃏 翻牌抽奖</div>
+<!-- PAGE: 翻牌抽奖 -->
+<div class="page sub-page" id="page-flip">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">🃏 翻牌抽奖</div>
     <div style="display:flex;gap:6px;align-items:center;">
       <span style="font-size:11px;color:var(--sub);">牌数</span>
       <input type="number" id="flip-count" min="1" max="20" value="9"
@@ -999,119 +1136,106 @@ body.dog .dog-deco{display:block;}
         onchange="resetFlip()">
     </div>
   </div>
-  <div class="panel-body">
+  <div class="scroll" style="padding:0 16px 16px;">
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
       <button class="btn-y" style="flex:1;min-width:80px;font-size:13px;" onclick="autoFlip()">🎲 随机揭牌</button>
       <button class="btn-o" style="flex:1;min-width:80px;font-size:13px;" onclick="resetFlip()">🔄 重置</button>
-      <button class="btn-o" style="flex:1;min-width:80px;font-size:13px;" onclick="openPanel('panel-flip-config')">⚙️ 配置</button>
+      <button class="btn-o" style="flex:1;min-width:80px;font-size:13px;" onclick="navigateTo('page-flip-config')">⚙️ 配置</button>
     </div>
     <div class="flip-area"><div id="flip-grid" class="flip-grid" style="grid-template-columns:repeat(3,1fr);"></div></div>
     <div id="flip-result" style="min-height:44px;text-align:center;font-size:14px;font-weight:800;color:var(--o);margin-top:10px;padding:10px;background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;display:none;"></div>
   </div>
 </div>
 
-<!-- FLIP CONFIG -->
-<div class="panel" id="panel-flip-config">
-  <div class="panel-hdr">
-    <div class="panel-back" onclick="closePanel('panel-flip-config')">‹</div>
-    <div class="panel-title">⚙️ 配置牌面</div>
+<!-- PAGE: 配置牌面 -->
+<div class="page sub-page" id="page-flip-config">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">⚙️ 配置牌面</div>
+    <div style="width:40px;"></div>
   </div>
-  <div class="panel-body" id="flip-config-body"></div>
+  <div class="scroll" style="padding:0 16px 16px;" id="flip-config-body"></div>
 </div>
 
-<!-- DIARY PANEL -->
-<div class="panel" id="panel-diary">
-  <div class="panel-hdr">
-    <div class="panel-back" onclick="closeDiaryPanel()">‹</div>
-    <div class="panel-title">📓 随记</div>
-    <button class="btn-y" style="padding:7px 14px;font-size:12px;" onclick="diaryNewEntry()">＋ 新建</button>
+<!-- PAGE: 努力值明细 -->
+<div class="page sub-page" id="page-ledger">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">💰 努力值明细</div>
+    <div style="width:40px;"></div>
   </div>
-  <!-- Tab bar -->
-  <div style="padding:12px 16px 0;background:var(--card);border-bottom:1.5px solid rgba(0,0,0,.07);">
-    <div class="diary-panel-tabs">
-      <div class="diary-tab active" id="dtab-list" onclick="switchDiaryTab('list')">📋 日记列表</div>
-      <div class="diary-tab" id="dtab-edit" onclick="switchDiaryTab('edit')">✏️ 编辑</div>
-    </div>
+  <div class="scroll" style="padding:0 16px 16px;" id="ledger-body"></div>
+</div>
+
+<!-- PAGE: 打卡记录 -->
+<div class="page sub-page" id="page-records">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">📅 打卡记录</div>
+    <div style="width:40px;"></div>
   </div>
+  <div class="scroll" style="padding:0 16px 16px;" id="records-body"></div>
+</div>
 
-  <!-- LIST VIEW -->
-  <div class="panel-body" id="diary-list-view">
-    <div id="diary-entries-list"><div style="text-align:center;padding:48px 0;color:var(--sub);font-size:14px;">暂无随记，点击右上角新建 📝</div></div>
+<!-- PAGE: 帮助中心 -->
+<div class="page sub-page" id="page-help">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">❓ 帮助中心</div>
+    <div style="width:40px;"></div>
   </div>
+  <div class="scroll" style="padding:0 16px 16px;" id="help-body"></div>
+</div>
 
-  <!-- EDIT VIEW -->
-  <div class="panel-body" id="diary-edit-view" style="display:none;position:relative;">
-    <!-- Date selector -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div class="diary-date-btn" id="diary-date-btn" onclick="openDiaryDatePicker()">
-        <span class="gear">⚙️</span>
-        <span id="diary-date-display">2026-04-14</span>
-      </div>
-      <div style="font-size:12px;color:var(--sub);" id="diary-time-display">14:30</div>
+<!-- PAGE: 消息中心 -->
+<div class="page sub-page" id="page-msg">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">📬 消息中心</div>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="scroll" style="padding:0 16px 16px;" id="msg-body"></div>
+</div>
+
+<!-- PAGE: 关于我们 -->
+<div class="page sub-page" id="page-about">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">ℹ️ 关于我们</div>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="scroll" style="padding:0 16px 16px;">
+    <div style="text-align:center;padding:28px 0 18px;">
+      <div style="font-size:64px;">🌱</div>
+      <div style="font-size:22px;font-weight:900;margin:8px 0 4px;">习惯打卡</div>
+      <div style="font-size:13px;color:var(--sub);">Version 5.0.0</div>
     </div>
-    <input type="date" id="diary-date-input" style="position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;" onchange="onDiaryDateChange()">
-
-    <!-- Weather -->
-    <div class="diary-weather-row" id="diary-weather-row">
-      <div class="diary-weather-opt sel" data-w="☀️" onclick="selectWeather(this)">☀️</div>
-      <div class="diary-weather-opt" data-w="🌤️" onclick="selectWeather(this)">🌤️</div>
-      <div class="diary-weather-opt" data-w="☁️" onclick="selectWeather(this)">☁️</div>
-      <div class="diary-weather-opt" data-w="🌧️" onclick="selectWeather(this)">🌧️</div>
-      <div class="diary-weather-opt" data-w="⛈️" onclick="selectWeather(this)">⛈️</div>
-      <div class="diary-weather-opt" data-w="❄️" onclick="selectWeather(this)">❄️</div>
-      <div class="diary-weather-opt" data-w="🌈" onclick="selectWeather(this)">🌈</div>
-      <div class="diary-weather-opt" data-w="🌫️" onclick="selectWeather(this)">🌫️</div>
-    </div>
-
-    <!-- Title -->
-    <input type="text" class="diary-title-input" id="diary-title-input" placeholder="标题" maxlength="40">
-
-    <!-- Content area -->
-    <div class="diary-content-area" id="diary-content-area" contenteditable="true" data-placeholder="写点什么吧…支持 emoji 和图片 🌟"></div>
-
-    <!-- Toolbar -->
-    <div class="diary-toolbar" style="position:relative;">
-      <div class="diary-tool-btn" title="插入图片" onclick="triggerDiaryImg()">🖼️</div>
-      <div class="diary-tool-btn" title="插入Emoji" onclick="toggleDiaryEmojiPanel()">😊</div>
-      <div style="flex:1;"></div>
-      <button class="btn-y" style="padding:8px 20px;font-size:13px;" onclick="saveDiaryEntry()">💾 保存</button>
-      <!-- Emoji panel (anchored to toolbar) -->
-      <div class="diary-emoji-panel" id="diary-emoji-panel"></div>
-    </div>
-
-    <!-- Pin for future dates -->
-    <div class="diary-pin-row" id="diary-pin-row" style="display:none;">
-      <input type="checkbox" id="diary-pin-cb">
-      <label for="diary-pin-cb" style="font-size:13px;font-weight:700;cursor:pointer;">📌 在首页显示为日程（仅限未来日期）</label>
-    </div>
-
-    <input type="file" id="diary-img-file" accept="image/*" style="display:none;" onchange="onDiaryImgSelected(event)">
-    <input type="hidden" id="diary-edit-id" value="">
+    <div class="about-row"><span>开发者</span><span style="color:var(--sub);">Leo&Janice</span></div>
+    <div class="about-row" onclick="showToast('敬请期待')"><span>用户协议</span><span>›</span></div>
+    <div class="about-row" onclick="showToast('敬请期待')"><span>隐私政策</span><span>›</span></div>
+    <div style="text-align:center;padding:24px 0 0;font-size:12px;color:var(--sub);">用坚持，书写更好的自己 ✨</div>
   </div>
 </div>
 
-<!-- RECORDS (kept for compatibility but hidden from UI) -->
-<div class="panel" id="panel-records">
-  <div class="panel-hdr"><div class="panel-back" onclick="closePanel('panel-records')">‹</div><div class="panel-title">📅 打卡记录</div></div>
-  <div class="panel-body" id="records-body"></div>
-</div>
-
-<!-- LEDGER -->
-<div class="panel" id="panel-ledger">
-  <div class="panel-hdr"><div class="panel-back" onclick="closePanel('panel-ledger')">‹</div><div class="panel-title">💰 努力值明细</div></div>
-  <div class="panel-body" id="ledger-body"></div>
-</div>
-
-<!-- BACKUP -->
-<div class="panel" id="panel-backup">
-  <div class="panel-hdr"><div class="panel-back" onclick="closePanel('panel-backup')">‹</div><div class="panel-title">☁️ 数据备份</div></div>
-  <div class="panel-body">
-    <!-- Cloud account info -->
+<!-- PAGE: 数据备份 -->
+<div class="page sub-page" id="page-backup">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">☁️ 数据备份</div>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="scroll" style="padding:0 16px 16px;">
     <div class="card" style="padding:18px;margin-bottom:14px;" id="cloud-account-card">
-      <div style="font-size:14px;font-weight:800;margin-bottom:8px;">☁️ 云端账户</div>
-      <div style="font-size:13px;color:var(--sub);margin-bottom:12px;" id="cloud-account-email">未登录</div>
-      <button class="btn-o" style="width:100%;margin-bottom:8px;" onclick="forceSyncFromCloud()">🔄 从云端拉取最新数据</button>
-      <button onclick="doSignOut()" style="width:100%;background:transparent;border:2px solid #E05050;border-radius:24px;padding:12px;font-size:14px;font-weight:700;color:#E05050;cursor:pointer;min-height:44px;">退出登录</button>
+      <div style="font-size:14px;font-weight:800;margin-bottom:8px;" id="lbl-cloud-account">☁️ 云端账户</div>
+      <div style="font-size:13px;color:var(--sub);margin-bottom:6px;" id="cloud-account-email">未登录</div>
+      <!-- Email verification status -->
+      <div id="email-verify-row" style="display:none;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span id="email-verify-status" style="font-size:12px;font-weight:700;"></span>
+        <button id="resend-verify-btn" onclick="doResendVerifyEmail()" style="display:none;font-size:11px;font-weight:700;color:var(--o);background:transparent;border:1.5px solid var(--o);border-radius:14px;padding:4px 10px;cursor:pointer;">重新发送验证邮件</button>
+      </div>
+      <button class="btn-o" style="width:100%;margin-bottom:8px;" onclick="forceSyncFromCloud()" id="btn-force-sync">🔄 从云端拉取最新数据</button>
+      <button onclick="doSignOut()" id="btn-sign-out" style="width:100%;background:transparent;border:2px solid #E05050;border-radius:24px;padding:12px;font-size:14px;font-weight:700;color:#E05050;cursor:pointer;min-height:44px;margin-bottom:8px;">退出登录</button>
+      <button onclick="doDeleteAccount()" id="btn-delete-account" style="width:100%;background:transparent;border:2px solid #E05050;border-radius:24px;padding:12px;font-size:14px;font-weight:700;color:#E05050;cursor:pointer;min-height:44px;opacity:.5;" disabled>🗑️ 注销账号</button>
     </div>
     <div class="card" style="padding:24px;text-align:center;">
       <div style="font-size:52px;margin-bottom:12px;">💾</div>
@@ -1125,16 +1249,14 @@ body.dog .dog-deco{display:block;}
   </div>
 </div>
 
-<!-- HELP -->
-<div class="panel" id="panel-help">
-  <div class="panel-hdr"><div class="panel-back" onclick="closePanel('panel-help')">‹</div><div class="panel-title">❓ 帮助中心</div></div>
-  <div class="panel-body" id="help-body"></div>
-</div>
-
-<!-- SETTING -->
-<div class="panel" id="panel-setting">
-  <div class="panel-hdr"><div class="panel-back" onclick="closePanel('panel-setting')">‹</div><div class="panel-title">⚙️ 设置</div></div>
-  <div class="panel-body">
+<!-- PAGE: 设置 -->
+<div class="page sub-page" id="page-setting">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">⚙️ 设置</div>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="scroll" style="padding:0 16px 16px;">
     <div class="card" style="padding:18px;margin-bottom:14px;">
       <div class="field"><label>我的昵称</label><input type="text" id="set-nick" placeholder="习惯达人" maxlength="12"></div>
     </div>
@@ -1143,98 +1265,172 @@ body.dog .dog-deco{display:block;}
   </div>
 </div>
 
-<!-- STYLE -->
-<div class="panel" id="panel-style">
-  <div class="panel-hdr"><div class="panel-back" onclick="closePanel('panel-style')">‹</div><div class="panel-title" id="style-title">🎨 样式设置</div></div>
-  <div class="panel-body">
-    <!-- Dark/Light mode -->
-    <div style="font-size:13px;font-weight:800;margin-bottom:10px;" id="style-mode-lbl">显示模式</div>
-    <div class="mode-row">
-      <div class="mode-btn" id="mode-auto" onclick="setMode('auto')">☀️🌙 跟随系统</div>
-      <div class="mode-btn" id="mode-light" onclick="setMode('light')">☀️ 日间</div>
-      <div class="mode-btn active" id="mode-dark" onclick="setMode('dark')">🌙 夜间</div>
-    </div>
-    <!-- Background -->
-    <div style="font-size:13px;font-weight:800;margin-bottom:10px;" id="style-bg-lbl">背景设置</div>
-    <div class="bg-grid" id="bg-grid"></div>
-    <label class="upload-label" style="margin-bottom:16px;">
-      📷 从相册上传背景图
-      <input type="file" accept="image/*" id="bg-img-input" style="display:none;">
-    </label>
-    <!-- 【已删除】主题颜色选择器（需求第一部分-3） -->
-    <!-- Dog theme -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-      <div onclick="applyDogTheme()" class="card" style="padding:14px;text-align:center;cursor:pointer;transition:transform .2s var(--ease-spring);" onpointerdown="this.style.transform='translate(2px,2px)'" onpointerup="this.style.transform=''">
-        <div style="font-size:28px;margin-bottom:4px;">🐕</div>
-        <div style="font-size:12px;font-weight:800;">线条小狗</div>
-      </div>
-      <div onclick="resetTheme()" class="card" style="padding:14px;text-align:center;cursor:pointer;transition:transform .2s var(--ease-spring);" onpointerdown="this.style.transform='translate(2px,2px)'" onpointerup="this.style.transform=''">
-        <div style="font-size:28px;margin-bottom:4px;">🌟</div>
-        <div style="font-size:12px;font-weight:800;" id="style-default-lbl">默认主题</div>
-      </div>
-    </div>
-    <!-- Font size - FIXED: applied to html element -->
-    <div style="font-size:13px;font-weight:800;margin-bottom:10px;" id="style-font-lbl">字体大小</div>
-    <div class="card" style="padding:14px;margin-bottom:14px;">
-      <div style="display:flex;gap:8px;">
-        <button class="btn-o" id="fs-sm" style="flex:1;" onclick="setFontSize(13,'sm')">小</button>
-        <button class="btn-y" id="fs-md" style="flex:1;" onclick="setFontSize(15,'md')">中</button>
-        <button class="btn-o" id="fs-lg" style="flex:1;" onclick="setFontSize(18,'lg')">大</button>
-      </div>
-    </div>
-    <!-- Language -->
-    <div style="font-size:13px;font-weight:800;margin-bottom:10px;" id="style-lang-lbl">语言 / Language</div>
-    <div class="card" style="padding:14px;">
-      <div style="display:flex;gap:8px;">
-        <button class="btn-y" id="lang-zh" style="flex:1;" onclick="setLang('zh')">中文</button>
-        <button class="btn-o" id="lang-en" style="flex:1;" onclick="setLang('en')">English</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- MSG -->
-<div class="panel" id="panel-msg">
-  <div class="panel-hdr"><div class="panel-back" onclick="closePanel('panel-msg')">‹</div><div class="panel-title">📬 消息中心</div></div>
-  <div class="panel-body" id="msg-body"></div>
-</div>
-
-<!-- ABOUT -->
-<div class="panel" id="panel-about">
-  <div class="panel-hdr"><div class="panel-back" onclick="closePanel('panel-about')">‹</div><div class="panel-title">ℹ️ 关于我们</div></div>
-  <div class="panel-body">
-    <div style="text-align:center;padding:28px 0 18px;">
-      <div style="font-size:64px;">🌱</div>
-      <div style="font-size:22px;font-weight:900;margin:8px 0 4px;">习惯打卡</div>
-      <div style="font-size:13px;color:var(--sub);">Version 5.0.0</div>
-    </div>
-    <div class="about-row"><span>开发者</span><span style="color:var(--sub);">习惯团队</span></div>
-    <div class="about-row" onclick="showToast('敬请期待')"><span>用户协议</span><span>›</span></div>
-    <div class="about-row" onclick="showToast('敬请期待')"><span>隐私政策</span><span>›</span></div>
-    <div style="text-align:center;padding:24px 0 0;font-size:12px;color:var(--sub);">用坚持，书写更好的自己 ✨</div>
-  </div>
-</div>
-
-<!-- DOG DECO -->
-<div class="dog-deco">
-  <svg width="56" height="56" viewBox="0 0 80 80" fill="none">
-    <ellipse cx="40" cy="54" rx="22" ry="15" fill="#FFFDF8" stroke="#5C3A1E" stroke-width="2.5"/>
-    <circle cx="40" cy="32" r="16" fill="#FFFDF8" stroke="#5C3A1E" stroke-width="2.5"/>
-    <ellipse cx="26" cy="22" rx="6.5" ry="9.5" fill="#FFE4C4" stroke="#5C3A1E" stroke-width="2" transform="rotate(-15 26 22)"/>
-    <ellipse cx="54" cy="22" rx="6.5" ry="9.5" fill="#FFE4C4" stroke="#5C3A1E" stroke-width="2" transform="rotate(15 54 22)"/>
-    <circle cx="34.5" cy="30" r="2.5" fill="#5C3A1E"/><circle cx="45.5" cy="30" r="2.5" fill="#5C3A1E"/>
-    <circle cx="35.5" cy="29" r="1" fill="white"/><circle cx="46.5" cy="29" r="1" fill="white"/>
-    <ellipse cx="40" cy="36" rx="3.5" ry="2.5" fill="#5C3A1E"/>
-    <path d="M37 39.5 Q40 43 43 39.5" stroke="#5C3A1E" stroke-width="2" stroke-linecap="round" fill="none"/>
-    <path d="M62 50 Q72 42 68 58" stroke="#5C3A1E" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-    <rect x="24" y="63" width="8" height="11" rx="4" fill="#FFFDF8" stroke="#5C3A1E" stroke-width="2"/>
-    <rect x="36" y="64" width="8" height="10" rx="4" fill="#FFFDF8" stroke="#5C3A1E" stroke-width="2"/>
-    <rect x="48" y="64" width="8" height="10" rx="4" fill="#FFFDF8" stroke="#5C3A1E" stroke-width="2"/>
-  </svg>
-</div>
-
 <div class="toast" id="toast"></div>
+
 <script>
+
+/* ================================================ PAGE NAVIGATION SYSTEM */
+let pageStack = [];
+const MAIN_PAGES = ['home','all','stats','my'];
+
+/* ================================================ HISTORY / BACK-KEY SUPPORT
+ * Strategy:
+ *   - Every navigateTo() and switchPage() calls history.pushState({ page, depth })
+ *   - depth tracks how many app-levels deep we are (0 = main tab, 1+ = sub-page)
+ *   - popstate fires when hardware/browser back is pressed:
+ *       • if depth > 0  → call goBack() (close sub-page)
+ *       • if depth == 0 and page !== 'home' → switch to home tab
+ *       • if depth == 0 and page == 'home'  → let browser exit (do nothing)
+ *   - _historyDepth mirrors the logical depth so popstate can decide correctly
+ *   - _suppressHistoryPush prevents double-push when goBack() itself calls
+ *     switchPage/navigateTo internally
+ */
+let _historyDepth = 0;
+let _suppressHistoryPush = false;
+
+function _pushHistory(pageName) {
+  if (_suppressHistoryPush) return;
+  _historyDepth++;
+  history.pushState({ page: pageName, depth: _historyDepth }, '', '');
+}
+
+// Initialise base history entry so the very first popstate has something behind it
+(function _initHistory() {
+  // replaceState the current entry with depth=0, page=home
+  history.replaceState({ page: 'page-home', depth: 0 }, '', '');
+  _historyDepth = 0;
+})();
+
+window.addEventListener('popstate', function(e) {
+  const state = e.state;
+  // If no state or we're already at depth 0 base → let native exit happen
+  if (!state || state.depth === 0) {
+    // Already at root — do nothing extra, browser will exit/go back naturally
+    _historyDepth = 0;
+    pageStack = [];
+    return;
+  }
+  // Otherwise, suppress push (we're going back, not forward) and call goBack()
+  _suppressHistoryPush = true;
+  _historyDepth = Math.max(0, _historyDepth - 1);
+  goBack();
+  _suppressHistoryPush = false;
+});
+
+function navigateTo(pageName, params) {
+  // Find current visible page
+  const currentPage = document.querySelector('.page.active');
+  const currentId = currentPage ? currentPage.id : 'page-home';
+  
+  // Push current to app stack
+  pageStack.push(currentId);
+  
+  // Push browser history entry
+  _pushHistory(pageName);
+  
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  
+  // Show target page
+  const target = document.getElementById(pageName);
+  if(target) target.classList.add('active');
+  
+  // Handle bottom nav visibility
+  const targetName = pageName.replace('page-', '');
+  if(MAIN_PAGES.includes(targetName)) {
+    document.getElementById('bnav').style.display = '';
+  } else {
+    document.getElementById('bnav').style.display = 'none';
+  }
+  
+  // Scroll to top
+  if(target) { const s = target.querySelector('.scroll'); if(s) s.scrollTop = 0; }
+  
+  // Run init callbacks
+  _pageInitCallbacks(pageName, params);
+}
+
+function goBack() {
+  if(pageStack.length === 0) {
+    // Default to home — this is called from popstate so suppress double-push
+    _suppressHistoryPush = true;
+    switchPage('home');
+    _suppressHistoryPush = false;
+    return;
+  }
+  const prevId = pageStack.pop();
+  const prevName = prevId.replace('page-', '');
+  
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  
+  // Show prev page
+  const prev = document.getElementById(prevId);
+  if(prev) prev.classList.add('active');
+  
+  // Show/hide bnav
+  if(MAIN_PAGES.includes(prevName)) {
+    document.getElementById('bnav').style.display = '';
+    // Refresh the page
+    if(prevName === 'home') { renderHabits(); renderSchedule(); }
+    if(prevName === 'all') renderAll();
+    if(prevName === 'stats') renderStats();
+    if(prevName === 'my') { updateMyStats(); }
+  } else {
+    document.getElementById('bnav').style.display = 'none';
+  }
+  
+  // Scroll to top
+  if(prev) { const s = prev.querySelector('.scroll'); if(s) s.scrollTop = 0; }
+}
+
+function _pageInitCallbacks(pageName, params) {
+  switch(pageName) {
+    case 'page-wish':
+      renderWishes(); break;
+    case 'page-spinner':
+      renderSpinItems(); setTimeout(drawSpinner, 50); break;
+    case 'page-flip':
+      resetFlip(); break;
+    case 'page-flip-config':
+      renderFlipConfig(); break;
+    case 'page-records':
+      renderRecords(); break;
+    case 'page-ledger':
+      renderLedger(); break;
+    case 'page-help':
+      renderHelp(); break;
+    case 'page-msg':
+      renderMsg(); break;
+    case 'page-diary':
+      initDiaryPanel(); break;
+    case 'page-style':
+      renderBgGrid();
+      const mode = S.darkMode || 'auto';
+      ['mode-auto','mode-light','mode-dark'].forEach(mid => {
+        const mel = document.getElementById(mid);
+        if(mel) mel.className = 'mode-btn' + (mid === ('mode-' + mode) ? ' active' : '');
+      });
+      document.getElementById('lang-zh').className = S.lang === 'en' ? 'btn-o' : 'btn-y';
+      document.getElementById('lang-en').className = S.lang === 'en' ? 'btn-y' : 'btn-o';
+      break;
+    case 'page-setting':
+      document.getElementById('set-nick').value = S.nick || ''; break;
+    case 'page-avatar':
+      initAvatarPage(); break;
+    case 'page-habit':
+      // params handled by openAddHabit/openEditHabit before calling navigateTo
+      break;
+    case 'page-wish-edit':
+      break;
+    case 'page-spin-item':
+      break;
+    case 'page-flip-item':
+      break;
+  }
+}
+
+
 /* ================================================ CONSTANTS */
 const EMOJIS=['🏃','📚','💧','🧘','🔤','🌙','🥗','✏️','🎵','💪','🧹','🌿','☀️','🎯','🍎','💊','🛏️','🚴','🧠','📝','🎨','🎸','🏊','🍵','🌸','🦋','🎀','🏋️','🧗','🎭','🎤','🌍','📸','🍳','💻','🎹','🎲','🧩','🌺','⭐','🔬','🪴','🎊','🧸','🌈','🌻','🍇','🫖','🏄','🎻'];
 const WISH_EMOJIS=['🎁','👟','👜','📱','🎮','✈️','🍜','🎬','📖','🏖️','🚗','🎸','💄','⌚','🧳','🛍️','🎂','🌸','🦋','🎀','💍','🏠','📷','🎪','🍕','🍣','☕','🎡','🎠','🛶','🪁','🎟️','🏕️','🎆','🌅','💐','🎊','🪄','🎭','🚢','🍾','🧸','🎶','🥂','🧁','🫶','🎰','🖼️','🏆','🎑'];
@@ -1269,6 +1465,17 @@ let S={
  *     match /users/{uid}/app/doc {
  *       allow read, write: if request.auth != null && request.auth.uid == uid;
  *     }
+ *     // inviteCodes: 任何已登录用户可读；只允许将 used 从 false 改为 true
+ *     // 且 usedBy 必须等于当前用户 uid，其他字段不可修改。
+ *     match /inviteCodes/{codeId} {
+ *       allow read: if request.auth != null;
+ *       allow update: if request.auth != null
+ *         && resource.data.used == false
+ *         && request.resource.data.used == true
+ *         && request.resource.data.usedBy == request.auth.uid
+ *         && request.resource.data.code == resource.data.code;
+ *       allow create, delete: if false; // 仅管理员在控制台手动创建
+ *     }
  *   }
  * }
  * ---------------------------------------------------------------
@@ -1287,50 +1494,373 @@ const auth = firebase.auth();
 const db   = firebase.firestore();
 
 /* ------------------------------------------------ Auth UI helpers */
-let _authMode = 'login';
-function switchAuthTab(mode){
-  _authMode = mode;
-  document.getElementById('tab-login').className    = 'auth-tab' + (mode==='login'?' active':'');
-  document.getElementById('tab-register').className = 'auth-tab' + (mode==='register'?' active':'');
-  document.getElementById('auth-action-btn').textContent = mode==='login' ? '🚀 登录' : '✨ 注册';
-  document.getElementById('auth-err').className = 'auth-err';
+let _authMode = 'login'; // 'login' | 'register' | 'forgot'
+
+function togglePwEye(inputId, iconEl) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  if (inp.type === 'password') { inp.type = 'text'; iconEl.textContent = '🙈'; }
+  else { inp.type = 'password'; iconEl.textContent = '👁'; }
 }
-function showAuthErr(msg){
+
+function switchAuthTab(mode) {
+  _authMode = mode;
+  const isLogin    = mode === 'login';
+  const isRegister = mode === 'register';
+  const isForgot   = mode === 'forgot';
+
+  // Tab highlight
+  document.getElementById('tab-login').className    = 'auth-tab' + (isLogin?' active':'');
+  document.getElementById('tab-register').className = 'auth-tab' + (isRegister?' active':'');
+
+  // Show/hide forms
+  document.getElementById('auth-main-form').style.display  = isForgot ? 'none' : '';
+  document.getElementById('auth-forgot-form').style.display = isForgot ? '' : 'none';
+  document.getElementById('auth-tabs-row').style.display    = isForgot ? 'none' : '';
+
+  // Register-only fields
+  document.getElementById('field-confirm-pass').style.display = isRegister ? '' : 'none';
+  document.getElementById('field-invite-code').style.display  = isRegister ? '' : 'none';
+
+  // Forgot-password link (login only)
+  const fl = document.getElementById('forgot-link-row');
+  if (fl) fl.style.display = isLogin ? '' : 'none';
+
+  // Action button text
+  const btn = document.getElementById('auth-action-btn');
+  if (btn) btn.textContent = isLogin ? '🚀 ' + (_tAuth('login')) : '✨ ' + (_tAuth('register'));
+
+  // Sub label
+  const sub = document.getElementById('auth-sub-lbl');
+  if (sub) sub.textContent = isForgot
+    ? (_tAuth('resetSubLbl'))
+    : (_tAuth('loginSubLbl'));
+
+  // Clear messages
+  document.getElementById('auth-err').className = 'auth-err';
+  document.getElementById('auth-ok').className  = 'auth-ok';
+}
+
+function _tAuth(key) {
+  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
+  const dict = {
+    zh: {
+      login:'登录', register:'注册', loginSubLbl:'登录后多设备同步你的打卡数据',
+      resetSubLbl:'输入注册邮箱，接收密码重置邮件',
+      verifiedEmail:'✅ 邮箱已验证', unverifiedEmail:'⚠️ 邮箱未验证',
+    },
+    en: {
+      login:'Login', register:'Register', loginSubLbl:'Sync your data across devices after login',
+      resetSubLbl:'Enter your email to receive a password reset link',
+      verifiedEmail:'✅ Email verified', unverifiedEmail:'⚠️ Email not verified',
+    }
+  };
+  return (dict[lang] || dict.zh)[key] || key;
+}
+
+function showAuthErr(msg) {
   const el = document.getElementById('auth-err');
   el.textContent = msg; el.className = 'auth-err show';
+  document.getElementById('auth-ok').className = 'auth-ok';
 }
-function doAuthAction(){
-  const email = document.getElementById('auth-email').value.trim();
-  const pass  = document.getElementById('auth-pass').value;
-  if(!email || !pass){ showAuthErr('请填写邮箱和密码'); return; }
-  document.getElementById('auth-action-btn').textContent = '处理中…';
-  const promise = _authMode === 'login'
-    ? auth.signInWithEmailAndPassword(email, pass)
-    : auth.createUserWithEmailAndPassword(email, pass);
-  promise.catch(err => {
-    document.getElementById('auth-action-btn').textContent = _authMode==='login'?'🚀 登录':'✨ 注册';
-    const msgs = {
-      'auth/invalid-email':           '邮箱格式不正确',
-      'auth/user-not-found':          '账号不存在，请先注册',
-      'auth/wrong-password':          '密码错误',
-      'auth/invalid-credential':      '邮箱或密码错误',
-      'auth/email-already-in-use':    '该邮箱已注册，请直接登录',
-      'auth/weak-password':           '密码至少需要 6 位',
-      'auth/too-many-requests':       '操作过于频繁，请稍后再试',
-      'auth/network-request-failed':  '网络错误，请检查连接',
+function showAuthOk(msg) {
+  const el = document.getElementById('auth-ok');
+  el.textContent = msg; el.className = 'auth-ok show';
+  document.getElementById('auth-err').className = 'auth-err';
+}
+
+const AUTH_ERR_MSGS = {
+  zh: {
+    'auth/invalid-email':          '邮箱格式不正确',
+    'auth/user-not-found':         '账号不存在，请先注册',
+    'auth/wrong-password':         '密码错误',
+    'auth/invalid-credential':     '邮箱或密码错误',
+    'auth/email-already-in-use':   '该邮箱已注册，请直接登录',
+    'auth/weak-password':          '密码至少需要 6 位',
+    'auth/too-many-requests':      '操作过于频繁，请稍后再试',
+    'auth/network-request-failed': '网络错误，请检查连接',
+    'auth/requires-recent-login':  '为确保安全，请重新登录后再试',
+    'auth/user-disabled':          '该账号已被禁用',
+  },
+  en: {
+    'auth/invalid-email':          'Invalid email format',
+    'auth/user-not-found':         'Account not found, please register first',
+    'auth/wrong-password':         'Wrong password',
+    'auth/invalid-credential':     'Incorrect email or password',
+    'auth/email-already-in-use':   'Email already registered, please log in',
+    'auth/weak-password':          'Password must be at least 6 characters',
+    'auth/too-many-requests':      'Too many attempts, please try again later',
+    'auth/network-request-failed': 'Network error, please check your connection',
+    'auth/requires-recent-login':  'Please log in again to perform this action',
+    'auth/user-disabled':          'This account has been disabled',
+  }
+};
+function authErrMsg(code) {
+  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
+  return (AUTH_ERR_MSGS[lang] || AUTH_ERR_MSGS.zh)[code] || ('错误：' + code);
+}
+
+async function doAuthAction() {
+  const email   = document.getElementById('auth-email').value.trim();
+  const pass    = document.getElementById('auth-pass').value;
+  const btn     = document.getElementById('auth-action-btn');
+  const lang    = (typeof S !== 'undefined' && S.lang) || 'zh';
+
+  if (!email || !pass) {
+    showAuthErr(lang === 'en' ? 'Please enter email and password' : '请填写邮箱和密码');
+    return;
+  }
+
+  if (_authMode === 'register') {
+    const passConfirm = document.getElementById('auth-pass-confirm').value;
+    const inviteCode  = document.getElementById('auth-invite').value.trim();
+
+    if (pass !== passConfirm) {
+      showAuthErr(lang === 'en' ? 'Passwords do not match' : '两次密码不一致');
+      return;
+    }
+    if (pass.length < 6) {
+      showAuthErr(lang === 'en' ? 'Password must be at least 6 characters' : '密码至少需要 6 位');
+      return;
+    }
+    if (!inviteCode) {
+      showAuthErr(lang === 'en' ? 'Please enter an invite code' : '请输入邀请码');
+      return;
+    }
+
+    btn.textContent = lang === 'en' ? 'Processing…' : '处理中…';
+    btn.disabled = true;
+
+    // Validate invite code
+    try {
+      const codeSnap = await db.collection('inviteCodes')
+        .where('code', '==', inviteCode)
+        .where('used', '==', false)
+        .limit(1)
+        .get();
+
+      if (codeSnap.empty) {
+        // Check if code exists but is used
+        const anySnap = await db.collection('inviteCodes')
+          .where('code', '==', inviteCode).limit(1).get();
+        if (!anySnap.empty) {
+          showAuthErr(lang === 'en' ? 'Invite code already used' : '该邀请码已被占用');
+        } else {
+          showAuthErr(lang === 'en' ? 'Invalid invite code' : '邀请码无效');
+        }
+        btn.textContent = '✨ ' + _tAuth('register');
+        btn.disabled = false;
+        return;
+      }
+
+      const codeDocRef = codeSnap.docs[0].ref;
+
+      // Create user
+      let userCred;
+      try {
+        userCred = await auth.createUserWithEmailAndPassword(email, pass);
+      } catch (err) {
+        showAuthErr(authErrMsg(err.code));
+        btn.textContent = '✨ ' + _tAuth('register');
+        btn.disabled = false;
+        return;
+      }
+
+      // Mark invite code as used (transaction)
+      try {
+        await db.runTransaction(async tx => {
+          const doc = await tx.get(codeDocRef);
+          if (!doc.exists || doc.data().used) throw new Error('code_already_used');
+          tx.update(codeDocRef, {
+            used: true,
+            usedBy: userCred.user.uid,
+            usedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+      } catch (_) { /* code race - non-fatal, user created */ }
+
+      // Send verification email
+      try {
+        await userCred.user.sendEmailVerification();
+        showAuthOk(lang === 'en'
+          ? 'Verification email sent! Please check your inbox.'
+          : '验证邮件已发送，请查收邮箱完成验证');
+      } catch (_) {}
+
+      btn.textContent = '✨ ' + _tAuth('register');
+      btn.disabled = false;
+
+    } catch (err) {
+      showAuthErr(authErrMsg(err.code) || (lang === 'en' ? 'Error: ' : '错误：') + err.message);
+      btn.textContent = '✨ ' + _tAuth('register');
+      btn.disabled = false;
+    }
+
+  } else {
+    // LOGIN
+    btn.textContent = lang === 'en' ? 'Processing…' : '处理中…';
+    btn.disabled = true;
+    try {
+      await auth.signInWithEmailAndPassword(email, pass);
+      // Reload user to sync email verification status
+      if (auth.currentUser) await auth.currentUser.reload();
+    } catch (err) {
+      showAuthErr(authErrMsg(err.code));
+      btn.textContent = '🚀 ' + _tAuth('login');
+      btn.disabled = false;
+    }
+    btn.textContent = '🚀 ' + _tAuth('login');
+    btn.disabled = false;
+  }
+}
+
+async function doSendResetEmail() {
+  const email = document.getElementById('auth-reset-email').value.trim();
+  const btn   = document.getElementById('auth-reset-btn');
+  const lang  = (typeof S !== 'undefined' && S.lang) || 'zh';
+  if (!email) {
+    showAuthErr(lang === 'en' ? 'Please enter your email' : '请输入邮箱');
+    return;
+  }
+  btn.textContent = lang === 'en' ? 'Sending…' : '发送中…';
+  btn.disabled = true;
+  try {
+    await auth.sendPasswordResetEmail(email);
+    showAuthOk(lang === 'en'
+      ? 'Password reset email sent! Please check your inbox.'
+      : '密码重置邮件已发送，请查收邮箱');
+    document.getElementById('auth-err').className = 'auth-err';
+  } catch (err) {
+    const resetErrMap = {
+      zh: { 'auth/user-not-found':'该邮箱未注册', 'auth/invalid-email':'邮箱格式不正确', 'auth/too-many-requests':'操作过于频繁，请稍后再试' },
+      en: { 'auth/user-not-found':'This email is not registered', 'auth/invalid-email':'Invalid email format', 'auth/too-many-requests':'Too many attempts, please try again later' }
     };
-    showAuthErr(msgs[err.code] || ('错误：' + err.message));
-  });
+    showAuthErr((resetErrMap[lang]||resetErrMap.zh)[err.code] || (lang==='en'?'Error: ':'错误：') + err.message);
+  }
+  btn.textContent = lang === 'en' ? '📧 Send Reset Email' : '📧 发送重置邮件';
+  btn.disabled = false;
 }
-function doAuthOffline(){
-  // Hide overlay and run fully offline (localStorage only)
+
+function doAuthOffline() {
   document.getElementById('auth-overlay').classList.add('hidden');
   setTimeout(()=>{ document.getElementById('auth-overlay').style.display='none'; }, 400);
   loadFromLocalAndRender();
 }
-function doSignOut(){
-  if(!confirm('确定退出登录？退出后数据将保存在云端。')) return;
-  auth.signOut();
+
+/* ------------------- Email verification helpers ------------------- */
+async function doResendVerifyEmail() {
+  const user = auth.currentUser;
+  if (!user) return;
+  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
+  const btn = document.getElementById('resend-verify-btn');
+  if (btn) { btn.textContent = lang === 'en' ? 'Sending…' : '发送中…'; btn.disabled = true; }
+  try {
+    await user.sendEmailVerification();
+    showToast(lang === 'en' ? '📧 Verification email sent!' : '📧 验证邮件已发送，请查收邮箱');
+  } catch(e) {
+    showToast(lang === 'en' ? 'Failed to send' : '发送失败，请稍后再试');
+  }
+  if (btn) { btn.textContent = lang === 'en' ? 'Resend Verification Email' : '重新发送验证邮件'; btn.disabled = false; }
+}
+
+function updateEmailVerifyUI(user) {
+  const row = document.getElementById('email-verify-row');
+  const statusEl = document.getElementById('email-verify-status');
+  const resendBtn = document.getElementById('resend-verify-btn');
+  if (!row || !statusEl) return;
+  if (!user) { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
+  if (user.emailVerified) {
+    statusEl.textContent = _tAuth('verifiedEmail');
+    statusEl.style.color = '#3a7d44';
+    if (resendBtn) resendBtn.style.display = 'none';
+  } else {
+    statusEl.textContent = _tAuth('unverifiedEmail');
+    statusEl.style.color = '#e07030';
+    if (resendBtn) resendBtn.style.display = '';
+  }
+}
+
+/* ------------------- Sign out ------------------- */
+function doSignOut() {
+  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
+  showCustomConfirm(
+    lang === 'en' ? 'Sign Out' : '退出登录',
+    lang === 'en' ? 'Are you sure you want to sign out? Your data is saved in the cloud.' : '确定退出登录？退出后数据将保存在云端。',
+    lang === 'en' ? 'Sign Out' : '退出', '#E05050'
+  ).then(ok => {
+    if (!ok) return;
+    if (_unsubSnapshot) { _unsubSnapshot(); _unsubSnapshot = null; }
+    _currentUid = null;
+    setCloudStatus('hidden');
+    const delBtn = document.getElementById('btn-delete-account');
+    if (delBtn) { delBtn.disabled = true; delBtn.style.opacity = '.5'; }
+    auth.signOut();
+  });
+}
+
+/* ------------------- Delete account ------------------- */
+async function doDeleteAccount() {
+  const user = auth.currentUser;
+  if (!user) return;
+  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
+  const ok = await showCustomConfirm(
+    lang === 'en' ? '⚠️ Delete Account' : '⚠️ 注销账号',
+    lang === 'en'
+      ? 'This action is irreversible. All cloud data will be permanently deleted. Local data will be kept.'
+      : '此操作不可撤销，所有云端数据将被永久删除，本地数据保留。',
+    lang === 'en' ? 'Delete Account' : '确认注销', '#E05050'
+  );
+  if (!ok) return;
+
+  const btn = document.getElementById('btn-delete-account');
+  if (btn) { btn.textContent = lang === 'en' ? 'Processing…' : '处理中…'; btn.disabled = true; }
+  try {
+    // Delete Firestore user document
+    try { await cloudDocRef(user.uid).delete(); } catch(_) {}
+    // Delete auth account
+    await user.delete();
+    // Clear local state
+    if (_unsubSnapshot) { _unsubSnapshot(); _unsubSnapshot = null; }
+    _currentUid = null;
+    setCloudStatus('hidden');
+    showToast(lang === 'en' ? '✅ Account deleted' : '✅ 账号已注销');
+  } catch (err) {
+    if (err.code === 'auth/requires-recent-login') {
+      showToast(lang === 'en' ? 'Please log in again to confirm' : '为确保安全，请重新登录后再试');
+      if (_unsubSnapshot) { _unsubSnapshot(); _unsubSnapshot = null; }
+      _currentUid = null;
+      setCloudStatus('hidden');
+      auth.signOut();
+    } else {
+      showToast((lang === 'en' ? 'Error: ' : '错误：') + err.message);
+      if (btn) { btn.textContent = lang === 'en' ? '🗑️ Delete Account' : '🗑️ 注销账号'; btn.disabled = false; btn.style.opacity = '1'; }
+    }
+  }
+}
+
+/* ------------------- Custom Confirm ------------------- */
+let _customConfirmResolve = null;
+function showCustomConfirm(title, msg, okLabel, okColor) {
+  return new Promise(resolve => {
+    _customConfirmResolve = resolve;
+    const overlay = document.getElementById('custom-confirm-overlay');
+    document.getElementById('ccd-title').textContent = title;
+    document.getElementById('ccd-msg').textContent = msg;
+    const okBtn = document.getElementById('ccd-ok');
+    okBtn.textContent = okLabel || '确认';
+    okBtn.style.background = okColor ? 'transparent' : 'var(--y)';
+    okBtn.style.color = okColor || 'inherit';
+    okBtn.style.borderColor = okColor || 'var(--bdr)';
+    const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
+    document.getElementById('ccd-cancel').textContent = lang === 'en' ? 'Cancel' : '取消';
+    overlay.style.display = 'flex';
+  });
+}
+function customConfirmResolve(val) {
+  document.getElementById('custom-confirm-overlay').style.display = 'none';
+  if (_customConfirmResolve) { _customConfirmResolve(val); _customConfirmResolve = null; }
 }
 
 /* ------------------------------------------------ Cloud status indicator */
@@ -1347,11 +1877,13 @@ function setCloudStatus(state){ // 'online' | 'syncing' | 'offline' | 'hidden'
 }
 
 /* ================================================ LOCAL STORAGE (offline cache) */
+let _saveDebounceTimer=null;
 function save(){
   // Always persist to localStorage as offline cache
   try{ localStorage.setItem('hbt7', JSON.stringify(S)); }catch(e){}
-  // Also push to Firestore if logged in
-  saveToCloud();
+  // Debounce cloud save by 300ms
+  clearTimeout(_saveDebounceTimer);
+  _saveDebounceTimer=setTimeout(()=>saveToCloud(),300);
 }
 
 function loadFromLocalAndRender(){
@@ -1378,6 +1910,7 @@ async function saveToCloud(){
   if(!_currentUid){ return; }
   setCloudStatus('syncing');
   try{
+    S._syncTs = Date.now();
     await cloudDocRef(_currentUid).set({ data: S }, { merge: false });
     setCloudStatus('online');
   } catch(e){
@@ -1439,23 +1972,36 @@ function subscribeRealtimeSync(uid){
 /* ================================================ AUTH STATE LISTENER */
 auth.onAuthStateChanged(async user => {
   if(user){
-    _currentUid = user.uid;
+    // Reload to get latest emailVerified status
+    try { await user.reload(); } catch(_) {}
+    const freshUser = auth.currentUser;
+    _currentUid = freshUser ? freshUser.uid : user.uid;
     // Hide auth overlay
     const overlay = document.getElementById('auth-overlay');
     overlay.classList.add('hidden');
     setTimeout(()=>{ overlay.style.display='none'; }, 400);
     // Update account info in backup panel
     const emailEl = document.getElementById('cloud-account-email');
-    if(emailEl) emailEl.textContent = user.email || user.uid;
+    if(emailEl) emailEl.textContent = (freshUser||user).email || (freshUser||user).uid;
+    // Email verification UI
+    updateEmailVerifyUI(freshUser || user);
+    // Enable delete account button
+    const delBtn = document.getElementById('btn-delete-account');
+    if(delBtn){ delBtn.disabled=false; delBtn.style.opacity='1'; }
     // Load cloud data then boot
-    await loadFromCloud(user.uid);
+    await loadFromCloud(_currentUid);
     bootUI();
     // Subscribe to real-time updates
-    subscribeRealtimeSync(user.uid);
+    subscribeRealtimeSync(_currentUid);
     setCloudStatus('online');
   } else {
     _currentUid = null;
     if(_unsubSnapshot){ _unsubSnapshot(); _unsubSnapshot = null; }
+    // Update email verify row
+    updateEmailVerifyUI(null);
+    // Disable delete account button
+    const delBtn = document.getElementById('btn-delete-account');
+    if(delBtn){ delBtn.disabled=true; delBtn.style.opacity='.5'; }
     // Show auth overlay
     const overlay = document.getElementById('auth-overlay');
     overlay.style.display = 'flex';
@@ -1583,7 +2129,7 @@ function doCheckin(id,cardEl){
   S.pts+=h.pts;
   // Ledger entry
   S.ledger.unshift({ts:Date.now(),date:today,type:'habit',name:h.name,pts:h.pts,sign:1});
-  S.records.unshift({date:today,id,name:h.name,emoji:h.emoji,pts:h.pts,customImg:h.customImg||''});
+  S.records.unshift({date:today,id:h.id,name:h.name,emoji:h.emoji,pts:h.pts,customImg:h.customImg||''});
   if(S.records.length>500)S.records=S.records.slice(0,500);
   if(S.ledger.length>1000)S.ledger=S.ledger.slice(0,1000);
   if(cardEl){cardEl.classList.add('pop');setTimeout(()=>cardEl.classList.remove('pop'),520);}
@@ -1722,14 +2268,18 @@ function renderAvatar(){
 
 /* ================================================ AVATAR */
 function initAvatarModal(){
-  const grid=document.getElementById('avatar-emoji-grid');if(!grid||grid._init)return;grid._init=true;
+  initAvatarPage();
+}
+function initAvatarPage(){
+  const grid=document.getElementById('avatar-emoji-grid');if(!grid)return;
+  grid.innerHTML=''; // reset each time
   DEFAULT_AVATARS.forEach(av=>{
     const d=document.createElement('div');d.className='av-opt';d.textContent=av;
-    d.onclick=()=>{S.avatar=av;S.avatarImg='';save();renderAvatar();closeModal('modal-avatar');};
+    d.onclick=()=>{S.avatar=av;S.avatarImg='';save();renderAvatar();goBack();};
     grid.appendChild(d);
   });
   const inp=document.getElementById('avatar-img-input');
-  if(inp&&!inp._w){inp._w=true;inp.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{S.avatarImg=ev.target.result;save();renderAvatar();closeModal('modal-avatar');showToast('头像已更新');};r.readAsDataURL(f);});}
+  if(inp&&!inp._w){inp._w=true;inp.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{compressImage(ev.target.result,400,0.6,compressed=>{S.avatarImg=compressed;save();renderAvatar();goBack();showToast('头像已更新');});};r.readAsDataURL(f);});}
 }
 
 
@@ -1762,7 +2312,7 @@ function openAddHabit(){
   document.getElementById('h-name').placeholder=T('habitNamePH');
   // 刷新field labels
   _refreshHabitModalLabels();
-  buildEPick('emoji-pick',EMOJIS,selE,em=>selE=em);buildCPick();openModal('modal-habit');wireImgs();
+  buildEPick('emoji-pick',EMOJIS,selE,em=>selE=em);buildCPick();navigateTo('page-habit');wireImgs();
 }
 function openEditHabit(id){
   const h=S.habits.find(x=>x.id===id);if(!h)return;
@@ -1775,7 +2325,7 @@ function openEditHabit(id){
   document.getElementById('h-name').placeholder=T('habitNamePH');
   if(selHImg){document.getElementById('h-img-thumb').src=selHImg;document.getElementById('h-img-preview').style.display='block';}else document.getElementById('h-img-preview').style.display='none';
   _refreshHabitModalLabels();
-  buildEPick('emoji-pick',EMOJIS,selE,em=>selE=em);buildCPick();openModal('modal-habit');wireImgs();
+  buildEPick('emoji-pick',EMOJIS,selE,em=>selE=em);buildCPick();navigateTo('page-habit');wireImgs();
 }
 /* 【第二部分-2】习惯弹窗field labels统一刷新 */
 function _refreshHabitModalLabels(){
@@ -1795,35 +2345,40 @@ function saveHabit(){
   const eid=document.getElementById('h-edit-id').value;
   if(eid){const h=S.habits.find(x=>x.id===parseInt(eid));if(h){h.name=name;h.emoji=selE;h.color=selC;h.pts=pts;h.customImg=selHImg;h.maxCkPerDay=maxCkPerDay;h.stock=stock;}}
   else S.habits.push({id:Date.now(),name,emoji:selE,days:0,color:selC,pts,checkDates:[],customImg:selHImg,maxCkPerDay,stock,totalChecks:0});
-  save();closeModal('modal-habit');renderHabits();renderAll();showToast(eid?'习惯已更新':'新习惯已添加 🎉');
+  save();goBack();renderHabits();renderAll();showToast(eid?'习惯已更新':'新习惯已添加 🎉');
 }
 function deleteHabit(){
   const eid=parseInt(document.getElementById('h-edit-id').value);if(!eid)return;
   if(!confirm('确定删除？'))return;
+  // 先获取习惯名（删除前）
+  const deletedH=S.habits.find(x=>x.id===eid);
+  const deletedName=deletedH?deletedH.name:null;
   S.habits=S.habits.filter(x=>x.id!==eid);
-  /* 【第三部分-3】清理该习惯在records中的历史记录 */
+  /* 清理该习惯在records中的历史记录 */
   S.records=S.records.filter(r=>r.id!==eid);
-  /* 【第三部分-3】清理该习惯在ledger中的打卡/补卡条目（type==='habit'||type==='makeup'且name对应） */
-  // 注意：ledger中记录的是name而非id，所以通过id定位习惯名进行清理（已在S.habits删除前完成）
-  const deletedHabit=S.habits; // 已被过滤，原始名无法获取，此处利用records中的name补充
-  // 实际上通过S.records（已清理）间接实现了清理；ledger无精确id关联，谨慎起见保留历史ledger
-  // 如需彻底清理ledger，可取消以下注释（但这会影响历史努力值明细展示）：
-  // S.ledger=S.ledger.filter(l=>!(l.type==='habit'&&...));
-  save();closeModal('modal-habit');renderHabits();renderAll();showToast('已删除');
+  /* 清理该习惯在ledger中的打卡/补卡条目（通过name精确匹配） */
+  if(deletedName){
+    S.ledger=S.ledger.filter(l=>!(
+      (l.type==='habit'||l.type==='makeup')&&
+      (l.name===deletedName||l.name===deletedName+'(补卡)')
+    ));
+  }
+  save();goBack();renderHabits();renderAll();showToast('已删除');
 }
 
 function deleteWish(){
   const eid=parseInt(document.getElementById('w-edit-id').value);if(!eid)return;
   if(!confirm('确定删除？'))return;
-  /* 【第三部分-3】清理该心愿在ledger中的兑换记录（type==='wish'||'free_wish'||'free_redeem'） */
+  /* 清理该心愿在ledger中的兑换记录（使用精确name匹配） */
   const w=S.wishes.find(x=>x.id===eid);
   if(w){
     S.ledger=S.ledger.filter(l=>!(
-      (l.type==='wish'||l.type==='free_wish'||l.type==='free_redeem')&&l.name&&l.name.includes(w.name)
+      (l.type==='wish'||l.type==='free_wish'||l.type==='free_redeem')&&l.name&&
+      (l.name===w.name||l.name==='免费兑换：'+w.name||l.name==='翻牌获得免费兑换：'+w.name||l.name==='转盘获得免费兑换：'+w.name)
     ));
   }
   S.wishes=S.wishes.filter(x=>x.id!==eid);
-  save();closeModal('modal-wish');renderWishes();showToast('已删除');
+  save();goBack();renderWishes();showToast('已删除');
 }
 
 /* ================================================ WISH MALL */
@@ -1883,7 +2438,7 @@ function openAddWish(){
   document.getElementById('w-modal-title').textContent=T('addWish');document.getElementById('w-del-btn').style.display='none';document.getElementById('w-img-preview').style.display='none';
   document.getElementById('w-name').placeholder=T('wishNamePH');document.getElementById('w-desc').placeholder=T('wishDescPH');
   _refreshWishModalLabels();
-  buildEPick('wish-emoji-pick',WISH_EMOJIS,selWE,em=>selWE=em);openModal('modal-wish');wireImgs();
+  buildEPick('wish-emoji-pick',WISH_EMOJIS,selWE,em=>selWE=em);navigateTo('page-wish-edit');wireImgs();
 }
 function openEditWish(id){
   const w=S.wishes.find(x=>x.id===id);if(!w)return;
@@ -1895,7 +2450,7 @@ function openEditWish(id){
   document.getElementById('w-name').placeholder=T('wishNamePH');document.getElementById('w-desc').placeholder=T('wishDescPH');
   if(selWImg){document.getElementById('w-img-thumb').src=selWImg;document.getElementById('w-img-preview').style.display='block';}else document.getElementById('w-img-preview').style.display='none';
   _refreshWishModalLabels();
-  buildEPick('wish-emoji-pick',WISH_EMOJIS,selWE,em=>selWE=em);openModal('modal-wish');wireImgs();
+  buildEPick('wish-emoji-pick',WISH_EMOJIS,selWE,em=>selWE=em);navigateTo('page-wish-edit');wireImgs();
 }
 /* 【第二部分-2】心愿弹窗field labels统一刷新 */
 function _refreshWishModalLabels(){
@@ -1913,7 +2468,7 @@ function saveWish(){
   const eid=document.getElementById('w-edit-id').value;
   if(eid){const w=S.wishes.find(x=>x.id===parseInt(eid));if(w){w.name=name;w.emoji=selWE;w.cost=cost;w.desc=desc;w.customImg=selWImg;w.stock=stock;}}
   else S.wishes.push({id:Date.now(),name,emoji:selWE,desc,cost,redeemCount:0,stock,customImg:selWImg,freeRedeem:0});
-  save();closeModal('modal-wish');renderWishes();showToast(eid?'心愿已更新':'心愿已添加 ✨');
+  save();goBack();renderWishes();showToast(eid?'心愿已更新':'心愿已添加 ✨');
 }
 
 
@@ -2003,7 +2558,7 @@ function openAddSpinItem(){
   document.getElementById('si-label').value='+20⚡';document.getElementById('si-color').value='#F5C842';
   document.getElementById('si-weight').value='1';document.getElementById('si-edit-idx').value='';
   document.getElementById('si-del-btn').style.display='none';
-  onSpinTypeChange();fillWishSels();openModal('modal-spin-item');
+  onSpinTypeChange();fillWishSels();navigateTo('page-spin-item');
 }
 function openEditSpinItem(idx){
   const item=S.spinItems[idx];if(!item)return;
@@ -2013,7 +2568,7 @@ function openEditSpinItem(idx){
   document.getElementById('si-weight').value=item.weight||1;document.getElementById('si-edit-idx').value=idx;
   document.getElementById('si-del-btn').style.display='inline-flex';
   onSpinTypeChange();fillWishSels();if(item.wishId)document.getElementById('si-wish-sel').value=item.wishId;
-  openModal('modal-spin-item');
+  navigateTo('page-spin-item');
 }
 function onSpinTypeChange(){const t=document.getElementById('si-type').value;document.getElementById('si-pts-field').style.display=t==='wish'?'none':'block';document.getElementById('si-wish-field').style.display=t==='wish'?'block':'none';}
 function fillWishSels(){
@@ -2027,9 +2582,9 @@ function saveSpinItem(){
   const eid=document.getElementById('si-edit-idx').value;
   const obj={type,pts,label,color,weight,wishId};
   if(eid!=='')S.spinItems[parseInt(eid)]=obj;else S.spinItems.push(obj);
-  save();closeModal('modal-spin-item');renderSpinItems();
+  save();goBack();renderSpinItems();
 }
-function deleteSpinItem(){const idx=parseInt(document.getElementById('si-edit-idx').value);if(isNaN(idx))return;S.spinItems.splice(idx,1);save();closeModal('modal-spin-item');renderSpinItems();showToast('已删除');}
+function deleteSpinItem(){const idx=parseInt(document.getElementById('si-edit-idx').value);if(isNaN(idx))return;S.spinItems.splice(idx,1);save();goBack();renderSpinItems();showToast('已删除');}
 
 /* ================================================ FLIP CARDS */
 let flipState=[];
@@ -2115,7 +2670,7 @@ function openEditFlipItem(idx){
   document.getElementById('fi-label').value=item.label||'';document.getElementById('fi-emoji').value=item.emoji||'🎁';
   document.getElementById('fi-edit-idx').value=isNew?'new':idx;
   fillWishSels();onFlipTypeChange();if(item.wishId)document.getElementById('fi-wish-sel').value=item.wishId;
-  openModal('modal-flip-item');
+  navigateTo('page-flip-item');
 }
 function onFlipTypeChange(){const t=document.getElementById('fi-type').value;document.getElementById('fi-pts-field').style.display=(t==='wish'||t==='empty')?'none':'block';document.getElementById('fi-wish-field').style.display=t==='wish'?'block':'none';}
 function saveFlipItem(){
@@ -2125,7 +2680,7 @@ function saveFlipItem(){
   const eid=document.getElementById('fi-edit-idx').value;
   const obj={type,pts,label,emoji,wishId};
   if(eid==='new')S.flipItems.push(obj);else S.flipItems[parseInt(eid)]=obj;
-  save();closeModal('modal-flip-item');renderFlipConfig();resetFlip();showToast('牌面已保存');
+  save();goBack();renderFlipConfig();resetFlip();showToast('牌面已保存');
 }
 
 /* ================================================ RECORDS */
@@ -2391,18 +2946,17 @@ function renderHelp(){
 function toggleHelp(i){const b=document.getElementById('hb'+i);const a=document.getElementById('ha'+i);const o=b.classList.contains('open');b.classList.toggle('open',!o);a.textContent=o?'▼':'▲';}
 function renderMsg(){const el=document.getElementById('msg-body');if(!el)return;const msgs=[{ico:'🎉',t:'v6.0 '+T('update'),b:T('v6desc'),time:T('today')},{ico:'🌙',t:T('darkModeMsg'),b:T('darkModeDesc'),time:T('today')},{ico:'🌍',t:T('langMsg'),b:T('langDesc'),time:T('today')}];el.innerHTML=msgs.map(m=>`<div style="display:flex;gap:12px;padding:14px;background:var(--card);border:1.5px solid var(--bdr);border-radius:18px;margin-bottom:10px;box-shadow:2px 2px 0 var(--bdr);"><div style="font-size:28px;">${m.ico}</div><div style="flex:1;"><div style="font-size:14px;font-weight:800;margin-bottom:3px;">${m.t}</div><div style="font-size:12px;color:var(--sub);">${m.b}</div></div><div style="font-size:11px;color:var(--sub);flex-shrink:0;">${m.time}</div></div>`).join('');}
 function saveSettings(){const n=document.getElementById('set-nick').value.trim();if(n){S.nick=n;document.getElementById('my-nick').textContent=n;}save();showToast(T('saved'));}
-function clearAllData(){if(!confirm(T('confirmClear')))return;localStorage.removeItem('hbt7');location.reload();}
-function setTheme(y,o,l,el){document.documentElement.style.setProperty('--y',y);document.documentElement.style.setProperty('--o',o);document.documentElement.style.setProperty('--ol',l);document.querySelectorAll('#panel-style .color-dot').forEach(d=>d.classList.remove('sel'));if(el)el.classList.add('sel');document.body.classList.remove('dog');S.theme={y,o,l};save();showToast(T('themeChanged'));}
-function applyDogTheme(){document.body.classList.add('dog');document.documentElement.style.setProperty('--y','#FFB347');document.documentElement.style.setProperty('--o','#E8843A');document.documentElement.style.setProperty('--ol','#FFE4C4');S.theme='dog';save();showToast('🐕 '+T('dogTheme'));}
-function resetTheme(){document.body.classList.remove('dog');S.theme=null;save();setTheme('#F5C842','#F5A623','#FDE8C8',null);}
-
-/* --- FONT SIZE FIX: apply to html element --- */
-function setFontSize(sz,key){
-  document.documentElement.style.fontSize=sz+'px';
-  S.fontSize=sz;S.fontKey=key||'md';save();
-  ['fs-sm','fs-md','fs-lg'].forEach(id=>{const b=document.getElementById(id);if(b)b.className=id===(('fs-'+(key||'md')))?'btn-y':'btn-o';});
-  showToast(T('fontChanged'));
+function clearAllData(){
+  const lang=(typeof S!=='undefined'&&S.lang)||'zh';
+  showCustomConfirm(
+    lang==='en'?'Clear All Data':'清空所有数据',
+    lang==='en'?'This will permanently delete all local habits, wishes, and records. Cloud data remains until next sync.':'此操作将清空本地所有习惯、心愿和记录数据，云端数据在下次同步前不受影响。',
+    lang==='en'?'Clear':'确认清空','#E05050'
+  ).then(ok=>{if(!ok)return;localStorage.removeItem('hbt7');location.reload();});
 }
+function setTheme(y,o,l,el){document.documentElement.style.setProperty('--y',y);document.documentElement.style.setProperty('--o',o);document.documentElement.style.setProperty('--ol',l);document.querySelectorAll('#panel-style .color-dot').forEach(d=>d.classList.remove('sel'));if(el)el.classList.add('sel');document.body.classList.remove('dog');S.theme={y,o,l};save();showToast(T('themeChanged'));}
+function applyDogTheme(){} // removed
+function resetTheme(){document.body.classList.remove('dog');S.theme=null;save();setTheme('#F5C842','#F5A623','#FDE8C8',null);} // kept for data compat
 
 /* --- DARK MODE --- */
 function setMode(mode){
@@ -2507,6 +3061,13 @@ const I18N={
     diaryUntitled:'无标题',diaryNoContent:'（无内容）',diaryPinned:'📌 日程',
     // All列表硬编码文字
     keptShort:'坚持',perDay:'次',stockShort:'库存',
+    // Auth / account
+    inviteCodeInvalid:'邀请码无效',inviteCodeUsed:'该邀请码已被占用',
+    passwordMismatch:'两次密码不一致',verifyEmailSent:'验证邮件已发送，请查收邮箱完成验证',
+    resetEmailSent:'密码重置邮件已发送，请查收邮箱',emailNotRegistered:'该邮箱未注册',
+    deleteAccountConfirmTitle:'注销账号',
+    deleteAccountConfirmMsg:'此操作不可撤销，所有云端数据将被永久删除，本地数据保留。',
+    requiresRecentLogin:'为确保安全，请重新登录后再试',
   },
   en:{
     today:'Today',noRecords:'No records yet',checkinOk:'Checked in',times:'times',days:'d',
@@ -2559,6 +3120,13 @@ const I18N={
     diaryUntitled:'Untitled',diaryNoContent:'(No content)',diaryPinned:'📌 Scheduled',
     // All list
     keptShort:'',perDay:'x',stockShort:'Stock',
+    // Auth / account
+    inviteCodeInvalid:'Invalid invite code',inviteCodeUsed:'Invite code already used',
+    passwordMismatch:'Passwords do not match',verifyEmailSent:'Verification email sent! Please check your inbox.',
+    resetEmailSent:'Password reset email sent! Please check your inbox.',emailNotRegistered:'This email is not registered',
+    deleteAccountConfirmTitle:'Delete Account',
+    deleteAccountConfirmMsg:'This action is irreversible. All cloud data will be permanently deleted. Local data will be kept.',
+    requiresRecentLogin:'Please log in again to perform this action',
   }
 };
 function T(key){return(I18N[S.lang||'zh']||I18N.zh)[key]||key;}
@@ -2580,10 +3148,9 @@ function setLang(lang){
   // 重新渲染当前活跃的统计页
   if(document.getElementById('page-stats').classList.contains('active'))renderStats();
   // 重新渲染打开的面板
-  document.querySelectorAll('.panel.open').forEach(p=>{ const map2={
-    'panel-wish':renderWishes,'panel-records':renderRecords,'panel-ledger':renderLedger,
-    'panel-help':renderHelp,'panel-msg':renderMsg,'panel-diary':()=>renderDiaryList(),
-  };if(map2[p.id])map2[p.id]();});
+  // Refresh active sub-pages
+  const curPg=document.querySelector('.page.active');
+  if(curPg){const map2={'page-wish':renderWishes,'page-records':renderRecords,'page-ledger':renderLedger,'page-help':renderHelp,'page-msg':renderMsg,'page-diary':()=>renderDiaryList()};if(map2[curPg.id])map2[curPg.id]();}
   showToast(lang==='en'?'Language: English':'语言：中文');
 }
 
@@ -2642,7 +3209,7 @@ function refreshDiaryLabels(){
   // 固定日程label
   const pinLbl=document.querySelector('#diary-pin-row label');if(pinLbl)pinLbl.textContent=S.lang==='en'?'📌 Show on home as schedule (future dates only)':'📌 在首页显示为日程（仅限未来日期）';
   // 重新渲染列表（更新空状态文字、无标题等）
-  if(document.getElementById('panel-diary').classList.contains('open'))renderDiaryList();
+  // no panel check needed, diary is now a page
 }
 
 /* 【第二部分-2】刷新"我的"页面标签 */
@@ -2666,11 +3233,11 @@ function refreshMyPageLabels(){
 
 function applyAllSettings(){
   applyDarkMode();applyBg();
-  // font
+  // font (kept for data compat even though UI removed)
   if(S.fontSize)document.documentElement.style.fontSize=S.fontSize+'px';
-  // theme
-  if(S.theme==='dog'){document.body.classList.add('dog');}
-  else if(S.theme&&S.theme.y){document.body.classList.remove('dog');document.documentElement.style.setProperty('--y',S.theme.y);document.documentElement.style.setProperty('--o',S.theme.o);document.documentElement.style.setProperty('--ol',S.theme.l);}
+  // theme (dog theme removed; only custom color themes apply)
+  if(S.theme&&S.theme!=='dog'&&S.theme.y){document.body.classList.remove('dog');document.documentElement.style.setProperty('--y',S.theme.y);document.documentElement.style.setProperty('--o',S.theme.o);document.documentElement.style.setProperty('--ol',S.theme.l);}
+  document.body.classList.remove('dog'); // always remove dog class
 }
 
 /* ================================================ FIREWORKS */
@@ -2685,41 +3252,37 @@ function launchFW(){
 function openModal(id){const el=document.getElementById(id);if(!el)return;el.classList.add('open');}
 function closeModal(id){const el=document.getElementById(id);if(!el)return;el.classList.remove('open');}
 function openPanel(id){
-  document.querySelectorAll('.panel.open').forEach(p=>{if(p.id!==id)p.classList.remove('open');});
-  const el=document.getElementById(id);if(!el)return;el.classList.add('open');
-  const map={
-    'panel-wish':renderWishes,
-    'panel-spinner':()=>{renderSpinItems();setTimeout(drawSpinner,50);},
-    'panel-flip':()=>{resetFlip();},
-    'panel-flip-config':renderFlipConfig,
-    'panel-records':renderRecords,
-    'panel-ledger':renderLedger,
-    'panel-help':renderHelp,
-    'panel-msg':renderMsg,
-    'panel-diary':()=>{initDiaryPanel();},
-    'panel-style':()=>{
-      renderBgGrid();
-      // Sync mode buttons
-      const mode=S.darkMode||'auto';
-      ['mode-auto','mode-light','mode-dark'].forEach(mid=>{const mel=document.getElementById(mid);if(mel)mel.className='mode-btn'+(mid===('mode-'+mode)?' active':'');});
-      // Sync lang
-      document.getElementById('lang-zh').className=S.lang==='en'?'btn-o':'btn-y';
-      document.getElementById('lang-en').className=S.lang==='en'?'btn-y':'btn-o';
-      // Sync font
-      const fk=S.fontKey||'md';
-      ['fs-sm','fs-md','fs-lg'].forEach(id2=>{const b=document.getElementById(id2);if(b)b.className=id2===('fs-'+fk)?'btn-y':'btn-o';});
-    },
+  // Legacy compat: map panel IDs to page IDs
+  const panelToPage = {
+    'panel-wish':'page-wish','panel-spinner':'page-spinner','panel-flip':'page-flip',
+    'panel-flip-config':'page-flip-config','panel-records':'page-records',
+    'panel-ledger':'page-ledger','panel-help':'page-help','panel-msg':'page-msg',
+    'panel-diary':'page-diary','panel-style':'page-style','panel-about':'page-about',
+    'panel-backup':'page-backup','panel-setting':'page-setting',
   };
-  if(map[id])map[id]();
-  if(id==='panel-setting'){document.getElementById('set-nick').value=S.nick||'';}
+  const pg = panelToPage[id];
+  if(pg) { navigateTo(pg); return; }
+  // fallback: try direct page
+  const pg2 = id.replace('panel-','page-');
+  navigateTo(pg2);
 }
-function closePanel(id){const el=document.getElementById(id);if(!el)return;el.classList.remove('open');}
+function closePanel(id){ goBack(); }
 /* 【第一部分-1】PAGES中已移除'focus' */
 const PAGES=['home','all','stats','my'];
 function switchPage(name){
-  document.querySelectorAll('.panel.open').forEach(p=>p.classList.remove('open'));
   document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'));
-  PAGES.forEach(p=>{document.getElementById('page-'+p).classList.toggle('active',p===name);document.getElementById('nav-'+p).classList.toggle('on',p===name);});
+  // Reset page stack when switching main tabs via bottom nav (correct behavior)
+  pageStack = [];
+  // Push browser history entry for this main tab switch
+  _pushHistory('page-'+name);
+  // Hide ALL pages including sub-pages
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  // Show main page
+  document.getElementById('page-'+name).classList.add('active');
+  // Update nav items
+  PAGES.forEach(p=>{document.getElementById('nav-'+p).classList.toggle('on',p===name);});
+  // Show bottom nav
+  document.getElementById('bnav').style.display = '';
   if(name==='stats')renderStats();if(name==='all')renderAll();if(name==='my'){updateMyStats();initAvatarModal();}
   if(name==='home')renderSchedule();
 }
@@ -2789,7 +3352,7 @@ function renderSchedule(){
 function openDiaryEntry(id){
   const e=(S.diaryEntries||[]).find(x=>String(x.id)===String(id));
   if(!e)return;
-  openPanel('panel-diary');
+  navigateTo('page-diary');
   setTimeout(()=>loadDiaryEntryForEdit(e),120);
 }
 
@@ -2803,9 +3366,7 @@ function initDiaryPanel(){
   initDiaryEmojiPanel();
 }
 
-function closeDiaryPanel(){
-  closePanel('panel-diary');
-}
+function closeDiaryPanel(){ goBack(); }
 
 function switchDiaryTab(tab){
   diaryCurrentTab=tab;
@@ -2968,30 +3529,44 @@ function triggerDiaryImg(){
   document.getElementById('diary-img-file').click();
 }
 
+function compressImage(dataUrl, maxWidth, quality, callback){
+  const img=new Image();
+  img.onload=()=>{
+    let w=img.width,h=img.height;
+    if(w>maxWidth){h=Math.round(h*maxWidth/w);w=maxWidth;}
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+    callback(canvas.toDataURL('image/jpeg',quality));
+  };
+  img.src=dataUrl;
+}
+
 function onDiaryImgSelected(e){
   const file=e.target.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=ev=>{
-    const area=document.getElementById('diary-content-area');
-    area.focus();
-    const sel=window.getSelection();
-    let inserted=false;
-    if(diaryEditorSavedRange){
-      if(area.contains(diaryEditorSavedRange.commonAncestorContainer)||area===diaryEditorSavedRange.commonAncestorContainer){
-        sel.removeAllRanges();sel.addRange(diaryEditorSavedRange);
-        const range=sel.getRangeAt(0);
-        range.deleteContents();
-        const img=document.createElement('img');img.src=ev.target.result;img.style.maxWidth='100%';img.style.borderRadius='10px';img.style.margin='4px 0';img.style.display='block';
-        range.insertNode(img);
-        range.setStartAfter(img);range.collapse(true);
-        sel.removeAllRanges();sel.addRange(range);
-        inserted=true;
+    compressImage(ev.target.result,800,0.7,compressed=>{
+      const area=document.getElementById('diary-content-area');
+      area.focus();
+      const sel=window.getSelection();
+      let inserted=false;
+      if(diaryEditorSavedRange){
+        if(area.contains(diaryEditorSavedRange.commonAncestorContainer)||area===diaryEditorSavedRange.commonAncestorContainer){
+          sel.removeAllRanges();sel.addRange(diaryEditorSavedRange);
+          const range=sel.getRangeAt(0);
+          range.deleteContents();
+          const img=document.createElement('img');img.src=compressed;img.style.maxWidth='100%';img.style.borderRadius='10px';img.style.margin='4px 0';img.style.display='block';
+          range.insertNode(img);
+          range.setStartAfter(img);range.collapse(true);
+          sel.removeAllRanges();sel.addRange(range);
+          inserted=true;
+        }
       }
-    }
-    if(!inserted){
-      const img=document.createElement('img');img.src=ev.target.result;img.style.maxWidth='100%';img.style.borderRadius='10px';img.style.margin='4px 0';img.style.display='block';
-      area.appendChild(img);
-    }
+      if(!inserted){
+        const img=document.createElement('img');img.src=compressed;img.style.maxWidth='100%';img.style.borderRadius='10px';img.style.margin='4px 0';img.style.display='block';
+        area.appendChild(img);
+      }
+    });
   };
   reader.readAsDataURL(file);
   e.target.value='';
@@ -3040,6 +3615,22 @@ function saveDiaryEntry(){
   switchDiaryTab('list');
 }
 
+/* ================================================ BOOTUI */
+function bootUI(){
+  applyAllSettings();
+  renderHabits();
+  renderAll();
+  updateMyStats();
+  renderSchedule();
+  refreshFilterLabels();
+  if(document.getElementById('page-stats').classList.contains('active'))renderStats();
+  const ap=document.querySelector('.page.active');
+  if(ap&&ap.id==='page-diary')renderDiaryList();
+  if(ap&&ap.id==='page-wish')renderWishes();
+  if(ap&&ap.id==='page-ledger')renderLedger();
+  renderAvatar();
+}
+
 /* ================================================ INIT */
 load();
 applyAllSettings();
@@ -3051,6 +3642,7 @@ wireImgs();
 initAvatarModal();
 setTimeout(drawSpinner,200);
 renderSchedule();
+
 
 </script>
 </body>
