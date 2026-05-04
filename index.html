@@ -4,11 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>习惯打卡</title>
+<!-- Security: Content Security Policy -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebaseapp.com data: blob:;">
 <!-- Firebase compat SDK (CDN) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<!-- DOMPurify for XSS sanitization -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <style>
 /* ===== ROOT ===== */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -20,18 +23,11 @@
   --ease-out:cubic-bezier(.25,.46,.45,.94);
   --ease-in-out:cubic-bezier(.45,0,.55,1);
 }
-/* DARK MODE */
-body.dark{--bg:#18181C;--card:#24242A;--text:#EFEFEF;--sub:#888;--bdr:#3A3A42;--ol:#302810;}
-body.dark .addcard{border-color:#555;}
-body.dark .bar-bg{background:#2E2E36;}
-body.dark .hstock{background:#333;color:#aaa;}
-body.dark .ledger-cell.empty{background:#2E2E36;}
+/* DARK MODE — 自动跟随系统 */
 @media(prefers-color-scheme:dark){
-  body:not(.force-light):not(.force-dark){--bg:#18181C;--card:#24242A;--text:#EFEFEF;--sub:#888;--bdr:#3A3A42;--ol:#302810;}
-  body:not(.force-light):not(.force-dark) .addcard{border-color:#555;}
-  body:not(.force-light):not(.force-dark) .bar-bg{background:#2E2E36;}
-  body:not(.force-light):not(.force-dark) .hstock{background:#333;color:#aaa;}
-  body:not(.force-light):not(.force-dark) .ledger-cell.empty{background:#2E2E36;}
+  body{--bg:#18181C;--card:#24242A;--text:#EFEFEF;--sub:#888;--bdr:#3A3A42;--ol:#302810;}
+  body .hstock{background:#333;color:#aaa;}
+  body .ledger-cell.empty{background:#2E2E36;}
 }
 html,body{width:100%;max-width:430px;margin:0 auto;background:var(--bg);
   font-family:'PingFang SC','Helvetica Neue',sans-serif;color:var(--text);
@@ -46,8 +42,8 @@ body.has-bg .hcard{background:rgba(255,255,255,.78);backdrop-filter:blur(4px);}
 body.has-bg .card{background:rgba(255,255,255,.82);backdrop-filter:blur(4px);}
 body.has-bg .all-item{background:rgba(255,255,255,.78);backdrop-filter:blur(4px);}
 body.has-bg .wish-card{background:rgba(255,255,255,.78);backdrop-filter:blur(4px);}
-body.has-bg.dark .hcard{background:rgba(24,24,28,.78);}
-body.has-bg.dark .card{background:rgba(24,24,28,.82);}
+@media(prefers-color-scheme:dark){body.has-bg .hcard{background:rgba(24,24,28,.78);}}
+@media(prefers-color-scheme:dark){body.has-bg .card{background:rgba(24,24,28,.82);}}
 /* BG GRID */
 .bg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
 .bg-thumb{aspect-ratio:3/4;border-radius:14px;border:3px solid transparent;cursor:pointer;
@@ -61,13 +57,6 @@ body.has-bg.dark .card{background:rgba(24,24,28,.82);}
   background:var(--o);display:none;align-items:center;justify-content:center;
   font-size:11px;color:#fff;font-weight:800;}
 .bg-thumb.sel .bg-ck{display:flex;}
-/* MODE BTNS */
-.mode-row{display:flex;gap:8px;margin-bottom:14px;}
-.mode-btn{flex:1;padding:10px 6px;border:2px solid var(--bdr);border-radius:14px;
-  font-size:13px;font-weight:700;cursor:pointer;background:var(--card);text-align:center;
-  transition:all .22s var(--ease-spring);}
-.mode-btn.active{background:var(--y);}
-.mode-btn:active{transform:scale(.93);}
 /* WEEK STATS ENHANCED */
 .week-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
 .week-badge{background:var(--ol);border:1.5px solid var(--bdr);border-radius:10px;
@@ -81,10 +70,7 @@ body.has-bg.dark .card{background:rgba(24,24,28,.82);}
 .wc-dot.ck{background:var(--y);color:var(--text);box-shadow:0 2px 8px rgba(245,200,66,.5);}
 .wc-dot.today-ring{border:2.5px solid var(--o);}
 .wc-dot.empty{background:#EEE;color:var(--sub);}
-.dark .wc-dot.empty{background:#333;color:#666;}
-.wc-bar{width:100%;background:#EEE;border-radius:6px;flex:1;position:relative;overflow:hidden;min-height:40px;}
-.wc-fill{position:absolute;bottom:0;width:100%;border-radius:4px;transition:height .7s var(--ease-spring);}
-.wc-count{font-size:10px;font-weight:700;margin-top:2px;}
+@media(prefers-color-scheme:dark){body .wc-dot.empty{background:#333;color:#666;}}
 /* MAKEUP */
 .makeup-item{display:flex;align-items:center;gap:10px;padding:10px 12px;
   background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;
@@ -185,8 +171,7 @@ button{cursor:pointer;background:none;font-family:inherit;}
   display:flex;align-items:center;justify-content:center;font-size:10px;
   animation:badgePop .4s var(--ease-spring);}
 @keyframes badgePop{from{transform:scale(0) rotate(-45deg);}60%{transform:scale(1.2) rotate(5deg);}to{transform:scale(1) rotate(0);}}
-.addcard{background:transparent;border:2px dashed #CCC;box-shadow:none;justify-content:center;border-radius:20px;}
-.addcard:active{transform:scale(.95);box-shadow:none;}
+
 .hcard[data-c=yellow] .hicon{background:#FFF7D6;border-color:#E8B800;}
 .hcard[data-c=green] .hicon{background:#DFF3E4;border-color:#5BAD7A;}
 .hcard[data-c=blue] .hicon{background:#D8EEFF;border-color:#5A9ED6;}
@@ -194,22 +179,11 @@ button{cursor:pointer;background:none;font-family:inherit;}
 .hcard[data-c=purple] .hicon{background:#EDE2FF;border-color:#9B72CF;}
 .hcard[data-c=orange] .hicon{background:#FFE8D0;border-color:#E07A30;}
 
-/* ===== FIREWORKS ===== */
-#fw-canvas{position:fixed;inset:0;z-index:9999;pointer-events:none;display:none;}
 
-/* ===== ALL LIST ===== */
 .all-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);
   border:1.5px solid var(--bdr);border-radius:18px;margin-bottom:10px;
   box-shadow:2px 2px 0 var(--bdr);
   transition:background .2s,transform .3s var(--ease-spring),box-shadow .2s,opacity .25s;}
-.all-item.dragging{opacity:.38;transform:scale(1.03) rotate(.5deg);box-shadow:10px 10px 0 var(--bdr);}
-.all-item.drag-top{border-top:3px solid var(--o);}
-.all-item.drag-bot{border-bottom:3px solid var(--o);}
-.drag-handle{width:30px;height:30px;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:4px;cursor:grab;flex-shrink:0;opacity:.28;transition:opacity .2s;}
-.drag-handle:hover{opacity:.7;}
-.drag-handle:active{cursor:grabbing;opacity:1;}
-.dl{width:16px;height:2px;background:var(--bdr);border-radius:2px;}
 
 /* ===== USER CARD ===== */
 .ucard{margin:0 16px 14px;background:var(--card);border:2px solid var(--bdr);
@@ -247,23 +221,7 @@ button{cursor:pointer;background:none;font-family:inherit;}
 .rowbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--bdr);}
 
 /* ===== PANEL ===== */
-.panel{position:fixed;inset:0;background:var(--bg);z-index:400;
-  display:flex;flex-direction:column;overflow:hidden;
-  max-width:430px;left:0;right:0;margin:0 auto;
-  height:100dvh;
-  transform:translateX(100%);
-  transition:transform .38s var(--ease-silk);
-  pointer-events:none;visibility:hidden;}
-.panel.open{transform:translateX(0);pointer-events:all;visibility:visible;}
-.panel-hdr{display:flex;align-items:center;gap:12px;padding:16px;
-  border-bottom:1.5px solid rgba(0,0,0,.07);flex-shrink:0;background:var(--card);
-  z-index:10;position:relative;}
-.panel-back{width:36px;height:36px;display:flex;align-items:center;justify-content:center;
-  background:var(--bg);border:1.5px solid var(--bdr);border-radius:12px;cursor:pointer;font-size:18px;
-  transition:transform .22s var(--ease-spring);}
-.panel-back:active{transform:scale(.82);}
-.panel-title{font-size:17px;font-weight:900;flex:1;}
-.panel-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;}
+
 
 /* ===== MODAL ===== */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0);
@@ -328,15 +286,11 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
   margin-bottom:16px;box-shadow:4px 4px 0 var(--bdr);}
 
 
-
 /* ===== RECORDS ===== */
-.rec-date-hdr{font-size:12px;font-weight:800;color:var(--sub);padding:14px 0 6px;
-  display:flex;align-items:center;gap:8px;}
+
 .rec-date-hdr::after{content:'';flex:1;height:1px;background:#E8E8E8;}
-.rec-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--card);
-  border:1.5px solid var(--bdr);border-radius:14px;margin-bottom:6px;box-shadow:2px 2px 0 var(--bdr);}
-.rec-icon{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--bdr);
-  display:flex;align-items:center;justify-content:center;font-size:18px;background:#fff;flex-shrink:0;overflow:hidden;}
+
+
 .rec-icon img{width:100%;height:100%;object-fit:cover;}
 
 /* ===== SPINNER ===== */
@@ -388,7 +342,6 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
 .cal-cell.today{border:2px solid var(--bdr);}
 .cal-cell.checked{background:var(--y);color:var(--text);}
 .cal-cell.empty{opacity:0;}
-.cal-cell.other-month{opacity:.28;}
 
 /* ===== AVATAR MODAL ===== */
 .avatar-emoji-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;}
@@ -430,7 +383,7 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
   background:rgba(26,26,26,.92);color:#fff;padding:10px 22px;border-radius:20px;
   font-size:14px;z-index:9998;pointer-events:none;
   opacity:0;transition:opacity .28s,transform .28s var(--ease-spring);
-  white-space:nowrap;max-width:300px;text-align:center;}
+  white-space:normal;max-width:min(300px,80vw);text-align:center;word-break:break-word;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* ===== SPIN ITEM ROW ===== */
@@ -598,34 +551,6 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
   transition:background .15s;}
 .habit-menu-cancel:active{background:var(--ol);}
 
-/* ===== DRAG HANDLE on hcard ===== */
-.hcard-drag-handle{position:absolute;top:0;left:0;width:28px;height:100%;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;cursor:grab;opacity:.22;transition:opacity .2s;z-index:2;padding-top:2px;}
-.hcard-drag-handle:active{cursor:grabbing;opacity:.7;}
-.hcard-drag-handle .dl{width:12px;height:2px;background:var(--bdr);border-radius:2px;}
-
-/* SortableJS drag states */
-/* 被拖动的卡片（原位幽灵）*/
-.hcard.sortable-ghost{
-  opacity:0 !important;
-  background:transparent !important;
-  border-color:transparent !important;
-  box-shadow:none !important;
-}
-/* 正在被拖动的克隆卡片 */
-.hcard.sortable-drag{
-  opacity:1 !important;
-  transform:scale(1.08) rotate(2deg) !important;
-  box-shadow:12px 16px 0 var(--bdr),0 20px 40px rgba(0,0,0,.22) !important;
-  cursor:grabbing !important;
-  z-index:9999;
-}
-/* 其他卡片让位动画 */
-#hgrid .hcard{
-  transition:transform .35s cubic-bezier(.34,1.4,.64,1);
-}
-
 /* ===== SECRET HOUSE ===== */
 .secret-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
 .secret-card{background:var(--card);border:2px solid var(--bdr);border-radius:20px;
@@ -690,7 +615,6 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
 </head>
 <body>
 
-<canvas id="fw-canvas"></canvas>
 
 <!-- ==================== FIREBASE AUTH OVERLAY ==================== -->
 <div id="auth-overlay">
@@ -768,7 +692,7 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
   </div>
   <div class="crop-scale-row">
     <label>缩放</label>
-    <input type="range" id="crop-scale" min="50" max="300" value="100" oninput="cropOnScale()">
+    <input type="range" id="crop-scale" min="100" max="400" value="100" oninput="cropOnScale()">
     <label id="crop-scale-lbl">100%</label>
   </div>
   <div class="crop-actions">
@@ -829,9 +753,6 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
     <div class="hgrid" id="hgrid"></div>
   </div>
 </div>
-
-<!-- ==================== ALL ==================== -->
-
 
 <!-- ==================== STATS ==================== -->
 <div class="page" id="page-stats">
@@ -959,7 +880,7 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
       <div style="width:16px;height:16px;border-radius:50%;background:var(--y);display:inline-block;"></div>已打卡
       <div style="width:16px;height:16px;border-radius:50%;border:2px solid var(--bdr);display:inline-block;"></div>今天
     </div>
-    <button class="btn-o" style="width:100%;margin-top:14px;" id="cal-undo-btn" onclick="undoTodayCheckin()">↩ 撤销今日最后一次打卡</button>
+    <button class="btn-o" style="width:100%;margin-top:14px;" id="cal-undo-btn" onclick="undoTodayCheckin()">↩ 撤销打卡</button>
     <button class="btn-o" style="width:100%;margin-top:8px;" onclick="openMakeup()">📅 补卡（补填历史打卡）</button>
   </div>
 </div>
@@ -1018,10 +939,10 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
     <div class="field">
       <label>图标</label>
       <div class="emoji-grid" id="emoji-pick"></div>
-      <label class="upload-label" style="margin-top:8px;" onclick="triggerImgCrop('h-img-input','habit')">
+      <div class="upload-label" style="margin-top:8px;" onclick="triggerImgCrop('h-img-input','habit')">
         📷 从相册上传图标
         <input type="file" accept="image/*" id="h-img-input" style="display:none;">
-      </label>
+      </div>
       <div id="h-img-preview" style="display:none;margin-top:8px;text-align:center;">
         <img id="h-img-thumb" style="width:56px;height:56px;border-radius:50%;border:2px solid var(--bdr);object-fit:cover;display:inline-block;">
       </div>
@@ -1051,10 +972,10 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
     <div class="field">
       <label>图标</label>
       <div class="emoji-grid" id="wish-emoji-pick"></div>
-      <label class="upload-label" style="margin-top:8px;" onclick="triggerImgCrop('w-img-input','wish')">
+      <div class="upload-label" style="margin-top:8px;" onclick="triggerImgCrop('w-img-input','wish')">
         📷 从相册上传图标
         <input type="file" accept="image/*" id="w-img-input" style="display:none;">
-      </label>
+      </div>
       <div id="w-img-preview" style="display:none;margin-top:8px;text-align:center;">
         <img id="w-img-thumb" style="width:56px;height:56px;border-radius:50%;border:2px solid var(--bdr);object-fit:cover;display:inline-block;">
       </div>
@@ -1106,10 +1027,10 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
     <div class="field">
       <label>图标</label>
       <div class="emoji-grid" id="secret-emoji-pick"></div>
-      <label class="upload-label" style="margin-top:8px;" onclick="triggerImgCrop('se-img-input','secret')">
+      <div class="upload-label" style="margin-top:8px;" onclick="triggerImgCrop('se-img-input','secret')">
         📷 从相册上传图标
         <input type="file" accept="image/*" id="se-img-input" style="display:none;">
-      </label>
+      </div>
       <div id="se-img-preview" style="display:none;margin-top:8px;text-align:center;">
         <img id="se-img-thumb" style="width:56px;height:56px;border-radius:50%;border:2px solid var(--bdr);object-fit:cover;display:inline-block;">
       </div>
@@ -1212,10 +1133,10 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
     <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:10px;">默认头像</div>
     <div class="avatar-emoji-grid" id="avatar-emoji-grid"></div>
     <div style="font-size:13px;font-weight:700;color:var(--sub);margin-bottom:8px;margin-top:16px;">上传自定义头像</div>
-    <label class="upload-label" onclick="triggerImgCrop('avatar-img-input','avatar')">
+    <div class="upload-label" onclick="triggerImgCrop('avatar-img-input','avatar')">
       📷 从相册上传
       <input type="file" accept="image/*" id="avatar-img-input" style="display:none;">
-    </label>
+    </div>
   </div>
 </div>
 
@@ -1247,10 +1168,10 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
   <div class="scroll" style="padding:0 16px 16px;">
     <div style="font-size:13px;font-weight:800;margin-bottom:10px;">背景设置</div>
     <div class="bg-grid" id="bg-grid"></div>
-    <label class="upload-label" style="margin-bottom:16px;" onclick="triggerImgCrop('bg-img-input','bg')">
+    <div class="upload-label" style="margin-bottom:16px;" onclick="triggerImgCrop('bg-img-input','bg')">
       📷 从相册上传背景图
       <input type="file" accept="image/*" id="bg-img-input" style="display:none;">
-    </label>
+    </div>
   </div>
 </div>
 
@@ -1376,15 +1297,6 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
   <div class="scroll" style="padding:0 16px 16px;" id="ledger-body"></div>
 </div>
 
-<!-- PAGE: 打卡记录 -->
-<div class="page sub-page" id="page-records">
-  <div class="hdr">
-    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
-    <div class="hdr-title">📅 打卡记录</div>
-    <div style="width:40px;"></div>
-  </div>
-  <div class="scroll" style="padding:0 16px 16px;" id="records-body"></div>
-</div>
 
 <!-- PAGE: 帮助中心 -->
 <div class="page sub-page" id="page-help">
@@ -1466,6 +1378,9 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
     <div class="habit-menu-title" id="habit-menu-title">习惯操作</div>
     <button class="habit-menu-btn" onclick="habitMenuMakeup()">
       <span style="font-size:20px;">📅</span><span>补卡</span>
+    </button>
+    <button class="habit-menu-btn" onclick="habitMenuUndo()">
+      <span style="font-size:20px;">↩️</span><span>撤销打卡</span>
     </button>
     <button class="habit-menu-btn" onclick="habitMenuEdit()">
       <span style="font-size:20px;">✏️</span><span>编辑习惯</span>
@@ -1609,10 +1524,9 @@ function _pageInitCallbacks(pageName, params) {
       resetFlip(); break;
     case 'page-flip-config':
       renderFlipConfig(); break;
-    case 'page-records':
-      renderRecords(); break;
+
     case 'page-ledger':
-      _ledgerYear=null;_ledgerMonth=null;renderLedger(); break;
+      _ledgerYear=null;_ledgerMonth=null;_ledgerSelDate=null;_ledgerTab='earn';renderLedger(); break;
     case 'page-help':
       renderHelp(); break;
     case 'page-msg':
@@ -1648,7 +1562,7 @@ const DEFAULT_AVATARS=['🐻','🐼','🐨','🦊','🐯','🐸','🐙','🦋','
 
 /* ================================================ STATE */
 let S={
-  habits:[],wishes:[],pts:0,records:[],focusLogs:[],ledger:[],
+  habits:[],wishes:[],pts:0,records:[],ledger:[],
   nick:'习惯达人',avatar:'🐻',avatarImg:'',
   diaryEntries:[],
   spinItems:[
@@ -1689,6 +1603,12 @@ let S={
  * }
  * ---------------------------------------------------------------
  */
+/*
+ * ⚠️  IMPORTANT — FIREBASE SECURITY RULES MUST BE DEPLOYED
+ * Copy the Firestore rules in the comment below into:
+ *   Firebase Console → Firestore Database → Rules
+ * Without these rules your database is publicly readable/writable!
+ */
 const FIREBASE_CONFIG = {
    apiKey: "AIzaSyCrC937iMemrKSM8MHH2ApugATMTzQjQJ8",
    authDomain: "my-habit-app-4fbdd.firebaseapp.com",
@@ -1701,6 +1621,27 @@ const FIREBASE_CONFIG = {
 firebase.initializeApp(FIREBASE_CONFIG);
 const auth = firebase.auth();
 const db   = firebase.firestore();
+
+/* ================================================ SECURITY HELPERS */
+// Safe HTML sanitizer — always use safeHTML() before assigning to innerHTML
+// when content may contain user-supplied text.
+function safeHTML(html) {
+  if (typeof DOMPurify !== 'undefined') {
+    return DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['b','i','u','br','span','div','img','p','strong','em','a'],
+      ALLOWED_ATTR: ['style','class','src','alt','href','target'],
+      ALLOW_DATA_ATTR: false
+    });
+  }
+  // Fallback: strip all tags if DOMPurify somehow failed to load
+  return html.replace(/<[^>]*>/g, '');
+}
+// Escape a string for safe embedding in HTML attributes / onclick parameters
+function escAttr(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
 /* ------------------------------------------------ Auth UI helpers */
 let _authMode = 'login'; // 'login' | 'register' | 'forgot'
@@ -1751,20 +1692,12 @@ function switchAuthTab(mode) {
 }
 
 function _tAuth(key) {
-  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
   const dict = {
-    zh: {
-      login:'登录', register:'注册', loginSubLbl:'登录后多设备同步你的打卡数据',
-      resetSubLbl:'输入注册邮箱，接收密码重置邮件',
-      verifiedEmail:'✅ 邮箱已验证', unverifiedEmail:'⚠️ 邮箱未验证',
-    },
-    en: {
-      login:'Login', register:'Register', loginSubLbl:'Sync your data across devices after login',
-      resetSubLbl:'Enter your email to receive a password reset link',
-      verifiedEmail:'✅ Email verified', unverifiedEmail:'⚠️ Email not verified',
-    }
+    login:'登录', register:'注册', loginSubLbl:'登录后多设备同步你的打卡数据',
+    resetSubLbl:'输入注册邮箱，接收密码重置邮件',
+    verifiedEmail:'✅ 邮箱已验证', unverifiedEmail:'⚠️ 邮箱未验证',
   };
-  return (dict[lang] || dict.zh)[key] || key;
+  return dict[key] || key;
 }
 
 function showAuthErr(msg) {
@@ -1779,44 +1712,27 @@ function showAuthOk(msg) {
 }
 
 const AUTH_ERR_MSGS = {
-  zh: {
-    'auth/invalid-email':          '邮箱格式不正确',
-    'auth/user-not-found':         '账号不存在，请先注册',
-    'auth/wrong-password':         '密码错误',
-    'auth/invalid-credential':     '邮箱或密码错误',
-    'auth/email-already-in-use':   '该邮箱已注册，请直接登录',
-    'auth/weak-password':          '密码至少需要 6 位',
-    'auth/too-many-requests':      '操作过于频繁，请稍后再试',
-    'auth/network-request-failed': '网络错误，请检查连接',
-    'auth/requires-recent-login':  '为确保安全，请重新登录后再试',
-    'auth/user-disabled':          '该账号已被禁用',
-  },
-  en: {
-    'auth/invalid-email':          'Invalid email format',
-    'auth/user-not-found':         'Account not found, please register first',
-    'auth/wrong-password':         'Wrong password',
-    'auth/invalid-credential':     'Incorrect email or password',
-    'auth/email-already-in-use':   'Email already registered, please log in',
-    'auth/weak-password':          'Password must be at least 6 characters',
-    'auth/too-many-requests':      'Too many attempts, please try again later',
-    'auth/network-request-failed': 'Network error, please check your connection',
-    'auth/requires-recent-login':  'Please log in again to perform this action',
-    'auth/user-disabled':          'This account has been disabled',
-  }
+  'auth/invalid-email':          '邮箱格式不正确',
+  'auth/user-not-found':         '账号不存在，请先注册',
+  'auth/wrong-password':         '密码错误',
+  'auth/invalid-credential':     '邮箱或密码错误',
+  'auth/email-already-in-use':   '该邮箱已注册，请直接登录',
+  'auth/weak-password':          '密码至少需要 6 位',
+  'auth/too-many-requests':      '操作过于频繁，请稍后再试',
+  'auth/network-request-failed': '网络错误，请检查连接',
+  'auth/requires-recent-login':  '为确保安全，请重新登录后再试',
+  'auth/user-disabled':          '该账号已被禁用',
 };
 function authErrMsg(code) {
-  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
-  return (AUTH_ERR_MSGS[lang] || AUTH_ERR_MSGS.zh)[code] || ('错误：' + code);
+  return AUTH_ERR_MSGS[code] || ('错误：' + code);
 }
 
 async function doAuthAction() {
   const email   = document.getElementById('auth-email').value.trim();
   const pass    = document.getElementById('auth-pass').value;
   const btn     = document.getElementById('auth-action-btn');
-  const lang    = (typeof S !== 'undefined' && S.lang) || 'zh';
-
   if (!email || !pass) {
-    showAuthErr(lang === 'en' ? 'Please enter email and password' : '请填写邮箱和密码');
+    showAuthErr('请填写邮箱和密码');
     return;
   }
 
@@ -1825,19 +1741,19 @@ async function doAuthAction() {
     const inviteCode  = document.getElementById('auth-invite').value.trim();
 
     if (pass !== passConfirm) {
-      showAuthErr(lang === 'en' ? 'Passwords do not match' : '两次密码不一致');
+      showAuthErr('两次密码不一致');
       return;
     }
     if (pass.length < 6) {
-      showAuthErr(lang === 'en' ? 'Password must be at least 6 characters' : '密码至少需要 6 位');
+      showAuthErr('密码至少需要 6 位');
       return;
     }
     if (!inviteCode) {
-      showAuthErr(lang === 'en' ? 'Please enter an invite code' : '请输入邀请码');
+      showAuthErr('请输入邀请码');
       return;
     }
 
-    btn.textContent = lang === 'en' ? 'Processing…' : '处理中…';
+    btn.textContent = '处理中…';
     btn.disabled = true;
 
     // Validate invite code
@@ -1853,9 +1769,9 @@ async function doAuthAction() {
         const anySnap = await db.collection('inviteCodes')
           .where('code', '==', inviteCode).limit(1).get();
         if (!anySnap.empty) {
-          showAuthErr(lang === 'en' ? 'Invite code already used' : '该邀请码已被占用');
+          showAuthErr('该邀请码已被占用');
         } else {
-          showAuthErr(lang === 'en' ? 'Invalid invite code' : '邀请码无效');
+          showAuthErr('邀请码无效');
         }
         btn.textContent = '✨ ' + _tAuth('register');
         btn.disabled = false;
@@ -1891,23 +1807,22 @@ async function doAuthAction() {
       // Send verification email
       try {
         await userCred.user.sendEmailVerification();
-        showAuthOk(lang === 'en'
-          ? 'Verification email sent! Please check your inbox.'
-          : '验证邮件已发送，请查收邮箱完成验证');
+        showAuthOk('验证邮件已发送，请查收邮箱完成验证');
       } catch (_) {}
 
       btn.textContent = '✨ ' + _tAuth('register');
       btn.disabled = false;
 
     } catch (err) {
-      showAuthErr(authErrMsg(err.code) || (lang === 'en' ? 'Error: ' : '错误：') + err.message);
+      console.error('[Auth] register error:', err);
+      showAuthErr(authErrMsg(err.code) || ('注册失败，请稍后再试'));
       btn.textContent = '✨ ' + _tAuth('register');
       btn.disabled = false;
     }
 
   } else {
     // LOGIN
-    btn.textContent = lang === 'en' ? 'Processing…' : '处理中…';
+    btn.textContent = '处理中…';
     btn.disabled = true;
     try {
       await auth.signInWithEmailAndPassword(email, pass);
@@ -1926,27 +1841,22 @@ async function doAuthAction() {
 async function doSendResetEmail() {
   const email = document.getElementById('auth-reset-email').value.trim();
   const btn   = document.getElementById('auth-reset-btn');
-  const lang  = (typeof S !== 'undefined' && S.lang) || 'zh';
-  if (!email) {
-    showAuthErr(lang === 'en' ? 'Please enter your email' : '请输入邮箱');
+ if (!email) {
+    showAuthErr('请输入邮箱');
     return;
   }
-  btn.textContent = lang === 'en' ? 'Sending…' : '发送中…';
+  btn.textContent = '发送中…';
   btn.disabled = true;
   try {
     await auth.sendPasswordResetEmail(email);
-    showAuthOk(lang === 'en'
-      ? 'Password reset email sent! Please check your inbox.'
-      : '密码重置邮件已发送，请查收邮箱');
+    showAuthOk('密码重置邮件已发送，请查收邮箱');
     document.getElementById('auth-err').className = 'auth-err';
   } catch (err) {
-    const resetErrMap = {
-      zh: { 'auth/user-not-found':'该邮箱未注册', 'auth/invalid-email':'邮箱格式不正确', 'auth/too-many-requests':'操作过于频繁，请稍后再试' },
-      en: { 'auth/user-not-found':'This email is not registered', 'auth/invalid-email':'Invalid email format', 'auth/too-many-requests':'Too many attempts, please try again later' }
-    };
-    showAuthErr((resetErrMap[lang]||resetErrMap.zh)[err.code] || (lang==='en'?'Error: ':'错误：') + err.message);
+    const resetErrMap = { 'auth/user-not-found':'该邮箱未注册', 'auth/invalid-email':'邮箱格式不正确', 'auth/too-many-requests':'操作过于频繁，请稍后再试' };
+    console.error('[Auth] reset email error:', err);
+    showAuthErr(resetErrMap[err.code] || '发送失败，请稍后再试');
   }
-  btn.textContent = lang === 'en' ? '📧 Send Reset Email' : '📧 发送重置邮件';
+  btn.textContent = '📧 发送重置邮件';
   btn.disabled = false;
 }
 
@@ -1962,16 +1872,15 @@ function doAuthOffline() {
 async function doResendVerifyEmail() {
   const user = auth.currentUser;
   if (!user) return;
-  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
-  const btn = document.getElementById('resend-verify-btn');
-  if (btn) { btn.textContent = lang === 'en' ? 'Sending…' : '发送中…'; btn.disabled = true; }
+ const btn = document.getElementById('resend-verify-btn');
+  if (btn) { btn.textContent = '发送中…'; btn.disabled = true; }
   try {
     await user.sendEmailVerification();
-    showToast(lang === 'en' ? '📧 Verification email sent!' : '📧 验证邮件已发送，请查收邮箱');
+    showToast('📧 验证邮件已发送，请查收邮箱');
   } catch(e) {
-    showToast(lang === 'en' ? 'Failed to send' : '发送失败，请稍后再试');
+    showToast('发送失败，请稍后再试');
   }
-  if (btn) { btn.textContent = lang === 'en' ? 'Resend Verification Email' : '重新发送验证邮件'; btn.disabled = false; }
+  if (btn) { btn.textContent = '重新发送验证邮件'; btn.disabled = false; }
 }
 
 function updateEmailVerifyUI(user) {
@@ -1981,8 +1890,7 @@ function updateEmailVerifyUI(user) {
   if (!row || !statusEl) return;
   if (!user) { row.style.display = 'none'; return; }
   row.style.display = 'flex';
-  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
-  if (user.emailVerified) {
+ if (user.emailVerified) {
     statusEl.textContent = _tAuth('verifiedEmail');
     statusEl.style.color = '#3a7d44';
     if (resendBtn) resendBtn.style.display = 'none';
@@ -1995,11 +1903,10 @@ function updateEmailVerifyUI(user) {
 
 /* ------------------- Sign out ------------------- */
 function doSignOut() {
-  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
-  showCustomConfirm(
-    lang === 'en' ? 'Sign Out' : '退出登录',
-    lang === 'en' ? 'Are you sure you want to sign out? Your data is saved in the cloud.' : '确定退出登录？退出后数据将保存在云端。',
-    lang === 'en' ? 'Sign Out' : '退出', '#E05050'
+ showCustomConfirm(
+    '退出登录',
+    '确定退出登录？退出后数据将保存在云端。',
+    '退出', '#E05050'
   ).then(ok => {
     if (!ok) return;
     if (_unsubSnapshot) { _unsubSnapshot(); _unsubSnapshot = null; }
@@ -2015,18 +1922,15 @@ function doSignOut() {
 async function doDeleteAccount() {
   const user = auth.currentUser;
   if (!user) return;
-  const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
-  const ok = await showCustomConfirm(
-    lang === 'en' ? '⚠️ Delete Account' : '⚠️ 注销账号',
-    lang === 'en'
-      ? 'This action is irreversible. All cloud data will be permanently deleted. Local data will be kept.'
-      : '此操作不可撤销，所有云端数据将被永久删除，本地数据保留。',
-    lang === 'en' ? 'Delete Account' : '确认注销', '#E05050'
+ const ok = await showCustomConfirm(
+    '⚠️ 注销账号',
+    '此操作不可撤销，所有云端数据将被永久删除，本地数据保留。',
+    '确认注销', '#E05050'
   );
   if (!ok) return;
 
   const btn = document.getElementById('btn-delete-account');
-  if (btn) { btn.textContent = lang === 'en' ? 'Processing…' : '处理中…'; btn.disabled = true; }
+  if (btn) { btn.textContent = '处理中…'; btn.disabled = true; }
   try {
     // Delete Firestore user document
     try { await cloudDocRef(user.uid).delete(); } catch(_) {}
@@ -2036,17 +1940,18 @@ async function doDeleteAccount() {
     if (_unsubSnapshot) { _unsubSnapshot(); _unsubSnapshot = null; }
     _currentUid = null;
     setCloudStatus('hidden');
-    showToast(lang === 'en' ? '✅ Account deleted' : '✅ 账号已注销');
+    showToast('✅ 账号已注销');
   } catch (err) {
     if (err.code === 'auth/requires-recent-login') {
-      showToast(lang === 'en' ? 'Please log in again to confirm' : '为确保安全，请重新登录后再试');
+      showToast('为确保安全，请重新登录后再试');
       if (_unsubSnapshot) { _unsubSnapshot(); _unsubSnapshot = null; }
       _currentUid = null;
       setCloudStatus('hidden');
       auth.signOut();
     } else {
-      showToast((lang === 'en' ? 'Error: ' : '错误：') + err.message);
-      if (btn) { btn.textContent = lang === 'en' ? '🗑️ Delete Account' : '🗑️ 注销账号'; btn.disabled = false; btn.style.opacity = '1'; }
+      console.error('[Auth] delete account error:', err);
+      showToast('操作失败，请稍后再试');
+      if (btn) { btn.textContent = '🗑️ 注销账号'; btn.disabled = false; btn.style.opacity = '1'; }
     }
   }
 }
@@ -2064,8 +1969,7 @@ function showCustomConfirm(title, msg, okLabel, okColor) {
     okBtn.style.background = okColor ? 'transparent' : 'var(--y)';
     okBtn.style.color = okColor || 'inherit';
     okBtn.style.borderColor = okColor || 'var(--bdr)';
-    const lang = (typeof S !== 'undefined' && S.lang) || 'zh';
-    document.getElementById('ccd-cancel').textContent = lang === 'en' ? 'Cancel' : '取消';
+     document.getElementById('ccd-cancel').textContent = '取消';
     overlay.style.display = 'flex';
   });
 }
@@ -2091,7 +1995,12 @@ function setCloudStatus(state){ // 'online' | 'syncing' | 'offline' | 'hidden'
 let _saveDebounceTimer=null;
 function save(){
   // Always persist to localStorage as offline cache
-  try{ localStorage.setItem('hbt7', JSON.stringify(S)); }catch(e){}
+  try{
+    const _data=JSON.stringify(S);
+    // Guard: warn if approaching 4MB storage limit
+    if(_data.length>4*1024*1024){console.warn('[Storage] Data approaching localStorage limit:',_data.length,'bytes');}
+    localStorage.setItem('hbt7',_data);
+  }catch(e){console.error('[Storage] localStorage save failed:',e);}
   // Debounce cloud save by 300ms
   clearTimeout(_saveDebounceTimer);
   _saveDebounceTimer=setTimeout(()=>saveToCloud(),300);
@@ -2138,7 +2047,7 @@ async function loadFromCloud(uid){
       S = Object.assign(S, cloudData);
       ensureFields();
       // Update local cache
-      try{ localStorage.setItem('hbt7', JSON.stringify(S)); }catch(_){}
+      try{ localStorage.setItem('hbt7',JSON.stringify(S)); }catch(e){console.error('[Storage] save failed:',e);}
     } else {
       // First time user: load from local if available, then push to cloud
       const local = localStorage.getItem('hbt7');
@@ -2173,7 +2082,7 @@ function subscribeRealtimeSync(uid){
     if(cloudTs > localTs){
       S = Object.assign(S, cloudData);
       ensureFields();
-      try{ localStorage.setItem('hbt7', JSON.stringify(S)); }catch(_){}
+      try{ localStorage.setItem('hbt7',JSON.stringify(S)); }catch(e){console.error('[Storage] save failed:',e);}
       bootUI();
       showToast('☁️ 已从其他设备同步');
     }
@@ -2243,12 +2152,9 @@ function ensureFields(){
   if(!S.records)S.records=[];
   if(!S.wishes)S.wishes=[];
   S.wishes.forEach(w=>{if(!w.customImg)w.customImg='';if(!w.stock)w.stock=0;if(!w.redeemCount)w.redeemCount=0;if(w.freeRedeem===undefined)w.freeRedeem=0;});
-  if(!S.focusLogs)S.focusLogs=[];
   if(!S.ledger)S.ledger=[];
   if(!S.avatar)S.avatar='🐻';
   if(!S.avatarImg)S.avatarImg='';
-  if(!S.lang)S.lang='zh';
-  if(!S.darkMode)S.darkMode='auto';
   if(!S.bgId)S.bgId='none';
   if(!S.spinItems||!S.spinItems.length)S.spinItems=[{type:'pts_add',pts:20,label:'+20⚡',color:'#F5C842',weight:2,wishId:null},{type:'pts_sub',pts:10,label:'-10⚡',color:'#FF8A80',weight:1,wishId:null},{type:'pts_add',pts:50,label:'+50⚡',color:'#69F0AE',weight:1,wishId:null}];
   S.spinItems.forEach(si=>{if(!si.weight)si.weight=1;if(!si.secretId)si.secretId=null;});
@@ -2276,7 +2182,7 @@ function initDefault(){
     {id:1,name:'看一场电影',emoji:'🎬',desc:'奖励自己',cost:100,redeemCount:0,stock:3,customImg:'',freeRedeem:0},
     {id:2,name:'美食大餐',emoji:'🍜',desc:'去最爱的餐厅',cost:200,redeemCount:0,stock:1,customImg:'',freeRedeem:0},
   ];
-  S.pts=0;S.records=[];S.focusLogs=[];S.ledger=[];S.avatar='🐻';S.avatarImg='';
+  S.pts=0;S.records=[];S.ledger=[];S.avatar='🐻';S.avatarImg='';
   generateDefaultFlipItems();save();
 }
 function generateDefaultFlipItems(){
@@ -2303,41 +2209,6 @@ let curFilter='todo';
 // Long-press menu state
 let _lpMenuTimer=null,_lpMenuBlocking=false,_currentMenuHabitId=null;
 
-/* ================================================ SORTABLE DRAG (SortableJS) */
-let _sortableInstance=null;
-
-function _initSortable(){
-  const el=document.getElementById('hgrid');
-  if(!el||typeof Sortable==='undefined')return;
-  if(_sortableInstance){_sortableInstance.destroy();_sortableInstance=null;}
-  _sortableInstance=Sortable.create(el,{
-    handle:'.hcard-drag-handle',
-    delay:500,
-    delayOnTouchOnly:true,
-    animation:250,
-    easing:'cubic-bezier(.34,1.4,.64,1)',
-    dragClass:'sortable-drag',
-    ghostClass:'sortable-ghost',
-    touchStartThreshold:3,
-    onStart(){
-      clearTimeout(_lpMenuTimer);
-      _lpMenuBlocking=true;
-      if(navigator.vibrate)navigator.vibrate(18);
-    },
-    onEnd(evt){
-      setTimeout(()=>{_lpMenuBlocking=false;},320);
-      if(evt.oldIndex===evt.newIndex)return;
-      // 从 DOM 顺序重建 S.habits
-      const cards=[...el.querySelectorAll('.hcard[data-hidx]')];
-      const newOrder=cards.map(c=>parseInt(c.getAttribute('data-hidx')));
-      const newHabits=newOrder.map(i=>S.habits[i]).filter(Boolean);
-      const inView=new Set(newOrder);
-      S.habits.forEach((h,i)=>{if(!inView.has(i))newHabits.push(h);});
-      S.habits=newHabits;
-      save();renderHabits();showToast('排序已更新 ✓');
-    },
-  });
-}
 
 function renderHabits(){
   const g=document.getElementById('hgrid');g.innerHTML='';
@@ -2362,25 +2233,20 @@ function renderHabits(){
     if(mp>1)extra+=`<div class="hstock">${ckCount}/${mp}次/天</div>`;
     if(h.stock>0)extra+=`<div class="hstock">库存${Math.max(0,stockLeft)}</div>`;
     div.innerHTML=`
-      <div class="hcard-drag-handle" data-drag="1">
-        <div class="dl"></div><div class="dl"></div><div class="dl"></div>
-      </div>
       ${done?'<div class="ckbadge">✓</div>':''}
       <div class="hicon">${ic}</div>
-      <div class="hname">${h.name}</div>
+      <div class="hname">${escAttr(h.name)}</div>
       <div class="hdays">坚持 ${h.days} 天</div>
       <div class="hpts-tag">+${h.pts}⚡</div>${extra}`;
 
     // --- Click (checkin) ---
     if(canCk){
       div.addEventListener('click',e=>{
-        if(e.target.closest('[data-drag]'))return;
         if(_lpMenuBlocking){_lpMenuBlocking=false;return;}
         doCheckin(h.id,div);
       });
     }else if(done){
       div.addEventListener('click',e=>{
-        if(e.target.closest('[data-drag]'))return;
         if(_lpMenuBlocking){_lpMenuBlocking=false;return;}
         showToast('今日已达上限');
       });
@@ -2390,7 +2256,6 @@ function renderHabits(){
 
     // --- Long press (menu) — only on card body, not drag handle ---
     const startLp=(e)=>{
-      if(e.target.closest('[data-drag]'))return;
       _lpMenuTimer=setTimeout(()=>{
         _lpMenuBlocking=true;
         showHabitMenu(h.id,h.name);
@@ -2407,7 +2272,6 @@ function renderHabits(){
     g.appendChild(div);
   });
   updateNotice();updateMyStats();
-  _initSortable();
 }
 
 /* ================================================ HABIT LONG-PRESS MENU */
@@ -2420,18 +2284,45 @@ function closeHabitMenu(){
   document.getElementById('habit-menu-overlay').classList.remove('open');
   _currentMenuHabitId=null;
 }
+function habitMenuUndo() {
+  const id = _currentMenuHabitId;
+  closeHabitMenu();
+  if (id === null || id === undefined) return;
+  const h = S.habits.find(x => x.id === id);
+  if (!h) return;
+  const today = todayKey();
+  const idx = h.checkDates.lastIndexOf(today);
+  if (idx === -1) {
+    showToast('今天还没有打卡，无法撤销');
+    return;
+  }
+  h.checkDates.splice(idx, 1);
+  h.days = new Set(h.checkDates).size;
+  h.totalChecks = Math.max(0, (h.totalChecks || 1) - 1);
+  S.pts = Math.max(0, S.pts - h.pts);
+  // 移除对应的打卡记录
+  const ri = S.records.findIndex(r => r.id === h.id && r.date === today);
+  if (ri !== -1) S.records.splice(ri, 1);
+  // 移除对应的努力值记录（包括正常打卡和补卡）
+  const li = S.ledger.findIndex(l =>
+    (l.type === 'habit' || l.type === 'makeup') &&
+    l.date === today &&
+    l.name === h.name &&
+    l.sign === 1
+  );
+  if (li !== -1) S.ledger.splice(li, 1);
+  save();
+  renderHabits();
+  updateNotice();
+  updateMyStats();
+  showToast('↩ 已撤销今日最后一次打卡');
+}
 function habitMenuMakeup(){
   const id=_currentMenuHabitId;
   closeHabitMenu();
-  if(!id&&id!==0)return;
+  if(id==null)return;
   calHabitId=id;
-  const h=S.habits.find(x=>x.id===id);
-  if(h){
-    renderCalendar(h,new Date());
-    const undoBtn=document.getElementById('cal-undo-btn');
-    undoBtn.style.display=todayCkCount(h)>0?'block':'none';
-  }
-  openMakeup();
+  openMakeup();   // 直接打开补卡弹窗
 }
 function habitMenuEdit(){
   const id=_currentMenuHabitId;
@@ -2470,7 +2361,7 @@ function doCheckin(id,cardEl){
   if(S.records.length>500)S.records=S.records.slice(0,500);
   if(S.ledger.length>1000)S.ledger=S.ledger.slice(0,1000);
   if(cardEl){cardEl.classList.add('pop');setTimeout(()=>cardEl.classList.remove('pop'),520);}
-  showToast('✅ '+h.name+' +'+h.pts+'⚡');launchFW();save();renderHabits();
+  showToast('✅ '+h.name+' +'+h.pts+'⚡');save();renderHabits();
 }
 
 // UNDO: remove last today's checkin
@@ -2531,7 +2422,7 @@ function undoTodayCheckin(){
   const ri=S.records.findIndex(r=>r.id===h.id&&r.date===today);
   if(ri!==-1)S.records.splice(ri,1);
   // Remove from ledger
-  const li=S.ledger.findIndex(l=>l.type==='habit'&&l.date===today&&l.name===h.name&&l.sign===1);
+  const li=S.ledger.findIndex(l=>(l.type==='habit'||l.type==='makeup')&&l.date===today&&l.name===h.name&&l.sign===1);
   if(li!==-1)S.ledger.splice(li,1);
   save();renderHabits();renderCalendar(h,calViewDate);
   const undoBtn=document.getElementById('cal-undo-btn');
@@ -2543,12 +2434,9 @@ function updateNotice(){
   const today=todayKey();
   const done=S.habits.filter(h=>todayCkCount(h)>=Math.max(1,h.maxCkPerDay||1)).length;
   const el=document.getElementById('notice-txt');
-  /* 【第二部分-2】通知文字通过T()国际化 */
   if(el)el.innerHTML=`今日完成 <b>${done}</b>/<b>${S.habits.length}</b> 个习惯 💪`;
 }
 
-/* ================================================ ALL + DRAG */
-let dragSrcIdx=null;
 /* ================================================ MY STATS */
 function updateMyStats(){
   const td=calcTotalDays();
@@ -2559,10 +2447,8 @@ function updateMyStats(){
   const mp=document.getElementById('mall-pts');if(mp)mp.textContent=S.pts;
   const lh=document.getElementById('ledger-hint');if(lh)lh.textContent='点击查看明细';
   renderAvatar();
-  /* 【第一部分-2】renderAchievements已删除 */
 }
 
-/* 【第一部分-2】renderAchievements已删除（achievement-list板块已从页面移除）*/
 function renderAvatar(){
   const el=document.getElementById('avatar-btn');if(!el)return;
   if(S.avatarImg){el.innerHTML=`<img src="${S.avatarImg}" style="width:100%;height:100%;object-fit:cover;">`;}
@@ -2602,10 +2488,9 @@ function openAddHabit(){
   selE=EMOJIS[0];selC='green';selHImg='';
   document.getElementById('h-name').value='';document.getElementById('h-pts').value='10';document.getElementById('h-edit-id').value='';
   document.getElementById('h-maxck').value='1';document.getElementById('h-stock').value='0';
-  /* 【第二部分-2】弹窗标题和按钮使用T() */
   document.getElementById('h-modal-title').textContent='添加习惯';document.getElementById('h-del-btn').style.display='none';
   document.getElementById('h-img-preview').style.display='none';
-  document.getElementById('h-name').placeholder=T('habitNamePH');
+  document.getElementById('h-name').placeholder='如：早起晨跑';
   buildEPick('emoji-pick',EMOJIS,selE,em=>selE=em);buildCPick();navigateTo('page-habit');wireImgs();
 }
 function openEditHabit(id){
@@ -2613,10 +2498,9 @@ function openEditHabit(id){
   selE=h.emoji;selC=h.color;selHImg=h.customImg||'';
   document.getElementById('h-name').value=h.name;document.getElementById('h-pts').value=h.pts;document.getElementById('h-edit-id').value=id;
   document.getElementById('h-maxck').value=h.maxCkPerDay||1;document.getElementById('h-stock').value=h.stock||0;
-  /* 【第二部分-2】弹窗标题和按钮使用T() */
   document.getElementById('h-modal-title').textContent='编辑习惯';document.getElementById('h-del-btn').style.display='inline-flex';
   document.getElementById('h-del-btn').textContent='删除';
-  document.getElementById('h-name').placeholder=T('habitNamePH');
+  document.getElementById('h-name').placeholder='如：早起晨跑';
   if(selHImg){document.getElementById('h-img-thumb').src=selHImg;document.getElementById('h-img-preview').style.display='block';}else document.getElementById('h-img-preview').style.display='none';
   buildEPick('emoji-pick',EMOJIS,selE,em=>selE=em);buildCPick();navigateTo('page-habit');wireImgs();
 }
@@ -2673,8 +2557,8 @@ function renderWishes(){
     const em=w.customImg?`<img src="${w.customImg}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">`:`<span style="font-size:32px;">${w.emoji}</span>`;
     const stk=w.stock>0?`库存${Math.max(0,w.stock-w.redeemCount)}`:'不限';
     div.innerHTML=`<div class="wish-emo">${em}</div>
-      <div style="font-size:13px;font-weight:800;margin-bottom:3px;">${w.name}</div>
-      <div style="font-size:11px;color:var(--sub);margin-bottom:4px;min-height:24px;">${w.desc||''}</div>
+      <div style="font-size:13px;font-weight:800;margin-bottom:3px;">${escAttr(w.name)}</div>
+      <div style="font-size:11px;color:var(--sub);margin-bottom:4px;min-height:24px;">${escAttr(w.desc||'')}</div>
       <div style="font-size:11px;color:var(--sub);margin-bottom:8px;">⚡${w.cost} · ${stk}</div>
       ${freeCount>0?`<button class="wish-redeem" style="background:linear-gradient(135deg,var(--y),var(--o));margin-bottom:6px;font-size:11px;" ${freeDisabled?'disabled':''} onclick="freeRedeemWish(event,${w.id})">🎁 免费兑换 (${freeCount}次)</button>`:''}
       <button class="wish-redeem" ${!can?'disabled':''} onclick="redeemWish(${w.id})">${usedUp?'已售罄':'立即兑换'}</button>
@@ -2695,7 +2579,7 @@ function redeemWish(id){
   if(S.pts<w.cost){showToast('努力值不足 💪');return;}
   S.pts-=w.cost;w.redeemCount=(w.redeemCount||0)+1;
   S.ledger.unshift({ts:Date.now(),date:todayKey(),type:'wish',name:w.name,pts:w.cost,sign:-1});
-  save();renderWishes();updateMyStats();showToast('🎉 兑换成功：'+w.name+'！');launchFW();
+  save();renderWishes();updateMyStats();showToast('🎉 兑换成功：'+w.name+'！');
 }
 function freeRedeemWish(evt,id){
   evt&&evt.stopPropagation();
@@ -2705,12 +2589,11 @@ function freeRedeemWish(evt,id){
   w.freeRedeem=Math.max(0,(w.freeRedeem||0)-1);
   if(w.stock>0)w.redeemCount=(w.redeemCount||0)+1;
   S.ledger.unshift({ts:Date.now(),date:todayKey(),type:'free_redeem',name:'免费兑换：'+w.name,pts:0,sign:0});
-  save();renderWishes();updateMyStats();showToast('🎁 免费兑换成功：'+w.name+'！');launchFW();
+  save();renderWishes();updateMyStats();showToast('🎁 免费兑换成功：'+w.name+'！');
 }
 function openAddWish(){
   selWE='🎁';selWImg='';
   document.getElementById('w-name').value='';document.getElementById('w-desc').value='';document.getElementById('w-pts').value='100';document.getElementById('w-edit-id').value='';document.getElementById('w-stock').value='1';
-  /* 【第二部分-2】使用T()国际化 */
   document.getElementById('w-modal-title').textContent='添加心愿';document.getElementById('w-del-btn').style.display='none';document.getElementById('w-img-preview').style.display='none';
   document.getElementById('w-name').placeholder='如：买一双球鞋';document.getElementById('w-desc').placeholder='描述一下…';
   buildEPick('wish-emoji-pick',WISH_EMOJIS,selWE,em=>selWE=em);navigateTo('page-wish-edit');wireImgs();
@@ -2719,7 +2602,6 @@ function openEditWish(id){
   const w=S.wishes.find(x=>x.id===id);if(!w)return;
   selWE=w.emoji;selWImg=w.customImg||'';
   document.getElementById('w-name').value=w.name;document.getElementById('w-desc').value=w.desc||'';document.getElementById('w-pts').value=w.cost;document.getElementById('w-edit-id').value=id;document.getElementById('w-stock').value=w.stock||0;
-  /* 【第二部分-2】使用T()国际化 */
   document.getElementById('w-modal-title').textContent='编辑心愿';document.getElementById('w-del-btn').style.display='inline-flex';
   document.getElementById('w-del-btn').textContent='删除';
   document.getElementById('w-name').placeholder='如：买一双球鞋';document.getElementById('w-desc').placeholder='描述一下…';
@@ -2741,15 +2623,23 @@ function saveWish(){
 /* ================================================ SPINNER (high-DPR) */
 let spinning=false,spinAngle=0;
 const SPIN_SIZE=600; // canvas logical size (high DPR)
-function drawSpinner(){
-  const canvas=document.getElementById('spinner-canvas');if(!canvas)return;
-  const ctx=canvas.getContext('2d');const W=SPIN_SIZE,cx=W/2,cy=W/2,R=W/2-6;
-  ctx.clearRect(0,0,W,W);
+// Offscreen canvas: pre-render static wheel content (segments + labels, no rotation)
+// Only rebuilt when spin items change. Animation rotates via CSS transform.
+let _spinOffscreen=null;
+let _spinOffscreenDirty=true;
+
+function _buildSpinOffscreen(){
+  const W=SPIN_SIZE,cx=W/2,cy=W/2,R=W/2-6;
+  _spinOffscreen=document.createElement('canvas');
+  _spinOffscreen.width=W;_spinOffscreen.height=W;
+  const ctx=_spinOffscreen.getContext('2d');
   const items=S.spinItems;
-  if(!items.length){ctx.fillStyle='#EEE';ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fill();return;}
-  // Build weighted segments
+  if(!items.length){
+    ctx.fillStyle='#EEE';ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fill();
+    _spinOffscreenDirty=false;return;
+  }
   const totalW=items.reduce((s,x)=>s+(x.weight||1),0);
-  let start=spinAngle;
+  let start=0; // offscreen always starts at 0; rotation applied via spinAngle
   items.forEach(item=>{
     const frac=(item.weight||1)/totalW;
     const sweep=Math.PI*2*frac;
@@ -2757,45 +2647,67 @@ function drawSpinner(){
     ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R,start,end);ctx.closePath();
     ctx.fillStyle=item.color||'#F5C842';ctx.fill();
     ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=3;ctx.stroke();
-    // Label
-    const mid=start+sweep/2;const lx=cx+Math.cos(mid)*(R*0.62);const ly=cy+Math.sin(mid)*(R*0.62);
+    const mid=start+sweep/2;
+    const lx=cx+Math.cos(mid)*(R*0.62);const ly=cy+Math.sin(mid)*(R*0.62);
     ctx.save();ctx.translate(lx,ly);ctx.rotate(mid+Math.PI/2);
     ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.75)';
     ctx.font=`bold ${Math.max(18,Math.min(28,R*0.13))}px PingFang SC,sans-serif`;
     ctx.fillText(item.label||'',0,0);ctx.restore();
     start=end;
   });
-  // Center cap
   ctx.beginPath();ctx.arc(cx,cy,R*0.12,0,Math.PI*2);
   ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='rgba(0,0,0,.25)';ctx.lineWidth=4;ctx.stroke();
+  _spinOffscreenDirty=false;
 }
+
+function drawSpinner(){
+  const canvas=document.getElementById('spinner-canvas');if(!canvas)return;
+  if(_spinOffscreenDirty||!_spinOffscreen)_buildSpinOffscreen();
+  const W=SPIN_SIZE,cx=W/2,cy=W/2;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,W);
+  // Rotate offscreen image around center by spinAngle
+  ctx.save();
+  ctx.translate(cx,cy);ctx.rotate(spinAngle);ctx.translate(-cx,-cy);
+  ctx.drawImage(_spinOffscreen,0,0);
+  ctx.restore();
+}
+
 function doSpin(){
   if(spinning||!S.spinItems.length){if(!S.spinItems.length)showToast('请先添加转盘项目');return;}
   spinning=true;document.getElementById('spin-btn').disabled=true;
   document.getElementById('spin-result').textContent='旋转中…';document.getElementById('spin-result').classList.remove('glow');
-  // Weighted random pick
   const totalW=S.spinItems.reduce((s,x)=>s+(x.weight||1),0);
   let rand=Math.random()*totalW;let pickedIdx=0;
   let cumW=0;for(let i=0;i<S.spinItems.length;i++){cumW+=(S.spinItems[i].weight||1);if(rand<cumW){pickedIdx=i;break;}}
-  // Compute target angle so picker lands on picked segment
-  let segStart=spinAngle;let cumW2=0;
+  let cumW2=0;
   for(let i=0;i<pickedIdx;i++)cumW2+=(S.spinItems[i].weight||1);
   const frac=cumW2/totalW;
   const segFrac=(S.spinItems[pickedIdx].weight||1)/totalW;
   const segMid=Math.PI*2*frac+Math.PI*2*segFrac*0.5;
-  // Target: pointer at top = -PI/2, so we want spinAngle + segMid = -PI/2 + k*2PI
-  const targetAngle=-Math.PI/2-segMid+Math.PI*2*(5+Math.ceil(Math.random()*3));
+  // targetAngle must be relative to current spinAngle so every spin
+  // travels the same arc regardless of accumulated rotation.
+  // Normalize spinAngle to [0, 2π) first to keep numbers small.
+  spinAngle=((spinAngle%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+  // We want the picker (at -π/2) to land on segMid after the spin.
+  // Required final angle = -π/2 - segMid (mod 2π), then add N full rotations.
+  const landAt=((-Math.PI/2-segMid)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+  const extraRounds=5+Math.floor(Math.random()*3); // 5~7 full rotations
+  const targetAngle=spinAngle+extraRounds*Math.PI*2+(landAt-spinAngle+Math.PI*2)%(Math.PI*2);
   const duration=3800;const startAngle=spinAngle;const startT=performance.now();
   function ease(t){return t<1?1-Math.pow(1-t,4):1;}
   function animate(now){
-    const t=Math.min(1,(now-startT)/duration);spinAngle=startAngle+(targetAngle-startAngle)*ease(t);
-    drawSpinner();if(t<1){requestAnimationFrame(animate);}
+    const t=Math.min(1,(now-startT)/duration);
+    spinAngle=startAngle+(targetAngle-startAngle)*ease(t);
+    drawSpinner();
+    if(t<1){requestAnimationFrame(animate);}
     else{spinning=false;document.getElementById('spin-btn').disabled=false;applySpinResult(S.spinItems[pickedIdx]);}
-  }requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
 }
 function applySpinResult(item){
   let msg='';
-  if(item.type==='pts_add'){S.pts+=item.pts;S.ledger.unshift({ts:Date.now(),date:todayKey(),type:'spin',name:'转盘：'+item.label,pts:item.pts,sign:1});msg=`获得 +${item.pts}⚡！当前 ${S.pts}⚡`;launchFW();}
+  if(item.type==='pts_add'){S.pts+=item.pts;S.ledger.unshift({ts:Date.now(),date:todayKey(),type:'spin',name:'转盘：'+item.label,pts:item.pts,sign:1});msg=`获得 +${item.pts}⚡！当前 ${S.pts}⚡`;}
   else if(item.type==='pts_sub'){S.pts=Math.max(0,S.pts-item.pts);S.ledger.unshift({ts:Date.now(),date:todayKey(),type:'spin',name:'转盘：'+item.label,pts:item.pts,sign:-1});msg=`扣除 -${item.pts}⚡，剩余 ${S.pts}⚡`;}
   else if(item.type==='wish'){
     const w=S.wishes.find(x=>x.id===item.wishId);
@@ -2803,7 +2715,7 @@ function applySpinResult(item){
       w.freeRedeem=(w.freeRedeem||0)+1;
       S.ledger.unshift({ts:Date.now(),date:todayKey(),type:'free_wish',name:'转盘获得免费兑换：'+w.name,pts:0,sign:0});
       msg=`获得「${w.name}」免费兑换机会×1！请前往心愿商城使用。`;
-      launchFW();
+      
     } else { msg='心愿不存在'; }
   }
   else if(item.type==='secret'){
@@ -2812,7 +2724,7 @@ function applySpinResult(item){
       si.remainingStock=(si.remainingStock||0)+1;
       S.secretLogs.unshift({timestamp:Date.now(),itemId:si.id,itemName:si.name,delta:1,reason:'转盘获得',type:'spin'});
       msg=`获得「${si.name}」库存 +1，可在私密小屋兑换！`;
-      launchFW();
+      
     } else { msg='私密小屋物品不存在'; }
   }
   save();updateMyStats();renderWishes();
@@ -2822,7 +2734,7 @@ function renderSpinItems(){
   const el=document.getElementById('spin-items-list');if(!el)return;
   el.innerHTML=S.spinItems.map((item,i)=>`<div class="spin-item-row" onclick="openEditSpinItem(${i})">
     <div class="spin-color-dot" style="background:${item.color||'#EEE'};"></div>
-    <div style="flex:1;font-size:13px;font-weight:700;">${item.label}</div>
+    <div style="flex:1;font-size:13px;font-weight:700;">${escAttr(item.label)}</div>
     <div style="font-size:11px;color:var(--sub);margin-right:8px;">权重×${item.weight||1}</div>
     <div style="font-size:11px;color:var(--sub);">${item.type==='wish'?'🎁':item.type==='pts_add'?'⚡+':'⚡-'}</div>
   </div>`).join('');drawSpinner();
@@ -2837,9 +2749,9 @@ function openAddSpinItem(){
 }
 function onSpinTypeChange(){const t=document.getElementById('si-type').value;document.getElementById('si-pts-field').style.display=(t==='wish'||t==='empty'||t==='secret')?'none':'block';document.getElementById('si-wish-field').style.display=t==='wish'?'block':'none';const sf=document.getElementById('si-secret-field');if(sf)sf.style.display=t==='secret'?'block':'none';}
 function fillWishSels(){
-  ['si-wish-sel','fi-wish-sel'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML=S.wishes.length?S.wishes.map(w=>`<option value="${w.id}">${w.emoji} ${w.name} (⚡${w.cost})</option>`).join(''):'<option>暂无心愿</option>';});
+  ['si-wish-sel','fi-wish-sel'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML=S.wishes.length?S.wishes.map(w=>`<option value="${w.id}">${escAttr(w.emoji+' '+w.name)} (⚡${w.cost})</option>`).join(''):'<option>暂无心愿</option>';});
   // Fill secret selects
-  ['si-secret-sel','fi-secret-sel'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML=(S.secretItems&&S.secretItems.length)?S.secretItems.map(s=>`<option value="${s.id}">${s.icon} ${s.name}</option>`).join(''):'<option>暂无私密小屋物品</option>';});
+  ['si-secret-sel','fi-secret-sel'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML=(S.secretItems&&S.secretItems.length)?S.secretItems.map(s=>`<option value="${s.id}">${escAttr((s.icon||'')+' '+s.name)}</option>`).join(''):'<option>暂无私密小屋物品</option>';});
 }
 function saveSpinItem(){
   const type=document.getElementById('si-type').value;const pts=parseInt(document.getElementById('si-pts').value)||10;
@@ -2850,7 +2762,7 @@ function saveSpinItem(){
   const eid=document.getElementById('si-edit-idx').value;
   const obj={type,pts,label,color,weight,wishId,secretId};
   if(eid!=='')S.spinItems[parseInt(eid)]=obj;else S.spinItems.push(obj);
-  save();goBack();renderSpinItems();
+  _spinOffscreenDirty=true;save();goBack();renderSpinItems();
 }
 function openEditSpinItem(idx){
   const item=S.spinItems[idx];if(!item)return;
@@ -2864,10 +2776,11 @@ function openEditSpinItem(idx){
   if(item.secretId){const sel=document.getElementById('si-secret-sel');if(sel)sel.value=item.secretId;}
   navigateTo('page-spin-item');
 }
-function deleteSpinItem(){const idx=parseInt(document.getElementById('si-edit-idx').value);if(isNaN(idx))return;S.spinItems.splice(idx,1);save();goBack();renderSpinItems();showToast('已删除');}
+function deleteSpinItem(){const idx=parseInt(document.getElementById('si-edit-idx').value);if(isNaN(idx))return;S.spinItems.splice(idx,1);_spinOffscreenDirty=true;save();goBack();renderSpinItems();showToast('已删除');}
 
 /* ================================================ FLIP CARDS */
 let flipState=[];
+let _flipSaveTimer=null;
 function resetFlip(){
   const n=Math.max(1,Math.min(20,parseInt(document.getElementById('flip-count').value)||9));
   S.flipCount=n;save();
@@ -2909,7 +2822,7 @@ function revealCard(idx,wrapEl,item){
 }
 function applyFlipResult(item){
   let msg='';
-  if(item.type==='pts_add'){S.pts+=item.pts;S.ledger.unshift({ts:Date.now(),date:todayKey(),type:'flip',name:'翻牌：'+item.label,pts:item.pts,sign:1});msg=`+${item.pts}⚡！当前 ${S.pts}⚡`;launchFW();}
+  if(item.type==='pts_add'){S.pts+=item.pts;S.ledger.unshift({ts:Date.now(),date:todayKey(),type:'flip',name:'翻牌：'+item.label,pts:item.pts,sign:1});msg=`+${item.pts}⚡！当前 ${S.pts}⚡`;}
   else if(item.type==='pts_sub'){S.pts=Math.max(0,S.pts-item.pts);S.ledger.unshift({ts:Date.now(),date:todayKey(),type:'flip',name:'翻牌：'+item.label,pts:item.pts,sign:-1});msg=`-${item.pts}⚡，剩余 ${S.pts}⚡`;}
   else if(item.type==='wish'){
     const w=S.wishes.find(x=>x.id===item.wishId);
@@ -2917,7 +2830,7 @@ function applyFlipResult(item){
       w.freeRedeem=(w.freeRedeem||0)+1;
       S.ledger.unshift({ts:Date.now(),date:todayKey(),type:'free_wish',name:'翻牌获得免费兑换：'+w.name,pts:0,sign:0});
       msg=`获得「${w.name}」免费兑换机会×1！请前往心愿商城使用。`;
-      launchFW();
+      
     } else { msg='心愿不存在'; }
   }
   else if(item.type==='secret'){
@@ -2926,11 +2839,13 @@ function applyFlipResult(item){
       si.remainingStock=(si.remainingStock||0)+1;
       S.secretLogs.unshift({timestamp:Date.now(),itemId:si.id,itemName:si.name,delta:1,reason:'翻牌获得',type:'flip'});
       msg=`获得「${si.name}」库存 +1，可在私密小屋兑换！`;
-      launchFW();
+      
     } else { msg='私密小屋物品不存在'; }
   }
   else{msg='😶 没有奖励，继续加油！';}
-  save();updateMyStats();renderWishes();
+  // Debounce heavy ops so rapid flips don't stall the main thread
+  clearTimeout(_flipSaveTimer);
+  _flipSaveTimer=setTimeout(()=>{save();updateMyStats();renderWishes();},400);
   const el=document.getElementById('flip-result');el.style.display='flex';el.textContent=item.emoji+' '+item.label+' → '+msg;showToast(msg);
 }
 function autoFlip(){
@@ -2995,17 +2910,6 @@ function saveFlipItem(){
   save();goBack();renderFlipConfig();resetFlip();showToast('牌面已保存');
 }
 
-/* ================================================ RECORDS */
-function renderRecords(){
-  const el=document.getElementById('records-body');if(!el)return;
-  if(!S.records.length){el.innerHTML=`<div style="text-align:center;padding:60px 0;color:var(--sub);">暂无记录</div>`;return;}
-  const groups={};S.records.forEach(r=>{if(!groups[r.date])groups[r.date]=[];groups[r.date].push(r);});
-  const dates=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
-  el.innerHTML=dates.map(date=>{
-    const items=groups[date].map(r=>{const ic=r.customImg?`<img src="${r.customImg}" alt="">`:`${r.emoji}`;return `<div class="rec-item"><div class="rec-icon">${ic}</div><div style="flex:1;"><div style="font-size:13px;font-weight:700;">${r.name}</div><div style="font-size:11px;color:var(--sub);">${r.makeup?'[补卡] ':''} 打卡成功</div></div><div style="font-size:13px;font-weight:800;color:var(--o);">+${r.pts}⚡</div></div>`;}).join('');
-    return `<div class="rec-date-hdr">${date===todayKey()?'今天':date}</div>${items}`;
-  }).join('');
-}
 
 /* ================================================ STATS — period switcher */
 function getWeekNumber(d){
@@ -3038,7 +2942,6 @@ function renderStatsChart(){
   const navLabel=document.getElementById('stats-nav-label');
   const navNext=document.getElementById('stats-nav-next');
   const navRow=document.getElementById('stats-nav-row');
-  const isZh=S.lang!=='en';
   const today=new Date();
 
   if(statsPeriod==='week'){
@@ -3049,14 +2952,14 @@ function renderStatsChart(){
     monday.setDate(today.getDate()+mondayOffset+statsOffset*7);
     const sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
 
-    if(wtEl)wtEl.textContent=isZh?'本周打卡':T('thisWeekCheckins');
+    if(wtEl)wtEl.textContent='本周打卡';
     const weekNum=getWeekNumber(monday);
-    if(wbEl)wbEl.textContent=isZh?`第 ${weekNum} 周`:`Week ${weekNum}`;
+    if(wbEl)wbEl.textContent=`第 ${weekNum} 周`;
     navLabel.textContent=`${monday.getMonth()+1}/${monday.getDate()} – ${sunday.getMonth()+1}/${sunday.getDate()}`;
     if(navNext)navNext.disabled=statsOffset>=0;
 
     const todayStr=todayKey();
-    const dayNames=isZh?['一','二','三','四','五','六','日']:['M','T','W','T','F','S','S'];
+    const dayNames=['一','二','三','四','五','六','日'];
     const cols=[];
     for(let i=0;i<7;i++){
       const d=new Date(monday);d.setDate(monday.getDate()+i);
@@ -3071,9 +2974,9 @@ function renderStatsChart(){
     const ref=new Date(today.getFullYear(),today.getMonth()+statsOffset,1);
     const year=ref.getFullYear(),month=ref.getMonth();
     const lastDay=new Date(year,month+1,0).getDate();
-    if(wtEl)wtEl.textContent=isZh?'本月打卡':'This Month';
-    if(wbEl)wbEl.textContent=isZh?`${year}年${month+1}月`:`${year}-${String(month+1).padStart(2,'0')}`;
-    navLabel.textContent=isZh?`${year}年${month+1}月`:`${year}-${String(month+1).padStart(2,'0')}`;
+    if(wtEl)wtEl.textContent='本月打卡';
+    if(wbEl)wbEl.textContent=`${year}年${month+1}月`;
+    navLabel.textContent=`${year}年${month+1}月`;
     if(navNext)navNext.disabled=statsOffset>=0;
     const todayStr=todayKey();
     const cols=[];
@@ -3087,12 +2990,11 @@ function renderStatsChart(){
 
   } else { // year
     const year=today.getFullYear()+statsOffset;
-    if(wtEl)wtEl.textContent=isZh?'本年打卡':'This Year';
-    if(wbEl)wbEl.textContent=isZh?`${year}年`:`${year}`;
-    navLabel.textContent=isZh?`${year}年`:`${year}`;
+    if(wtEl)wtEl.textContent='本年打卡';
+    if(wbEl)wbEl.textContent=`${year}年`;
+    navLabel.textContent=`${year}年`;
     if(navNext)navNext.disabled=statsOffset>=0;
-    const monthNames=isZh?['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']:
-      ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const monthNames=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
     const cols=[];
     for(let m=0;m<12;m++){
       const lastDay=new Date(year,m+1,0).getDate();
@@ -3139,7 +3041,7 @@ function _renderBarCols(wc,cols,mode){
         <div class="wc-day">${c.dayName}</div>
         <div class="wc-date">${c.dateLabel}</div>
         <div class="${'wc-dot'+(ck?' ck':' empty')+(todayCol?' today-ring':'')}">${c.count||''}</div>
-        <div style="font-size:8px;color:var(--sub);">${T('times')}</div>
+        <div style="font-size:8px;color:var(--sub);">${'次'}</div>
       </div>`;
     }).join('');
   }
@@ -3181,8 +3083,6 @@ function _statsDateRange(){
 
 function renderStatsSummary(){
   const {start,end}=_statsDateRange();
-  const isZh=S.lang!=='en';
-
   // 打卡天数：基于 S.records，保证删除习惯后历史记录仍计入
   const checkedDays=new Set(S.records.filter(r=>r.date>=start&&r.date<=end).map(r=>r.date));
   document.getElementById('stat-days').textContent=checkedDays.size;
@@ -3192,15 +3092,13 @@ function renderStatsSummary(){
   document.getElementById('stat-pts').textContent=earned;
 
   // 标签跟着周期变
-  const periodLabel=isZh
-    ? (statsPeriod==='week'?'本周':statsPeriod==='month'?'本月':'本年')
-    : (statsPeriod==='week'?'This Week':statsPeriod==='month'?'This Month':'This Year');
+  const periodLabel=statsPeriod==='week'?'本周':statsPeriod==='month'?'本月':'本年';
   const daysLbl=document.getElementById('stat-days-lbl');
   const ptsLbl=document.getElementById('stat-pts-lbl');
   const progTitle=document.getElementById('habit-prog-title');
-  if(daysLbl)daysLbl.textContent=isZh?`${periodLabel}打卡天数`:`${periodLabel} Check-in Days`;
-  if(ptsLbl)ptsLbl.textContent=isZh?`${periodLabel}努力值`:`${periodLabel} Points`;
-  if(progTitle)progTitle.textContent=isZh?`${periodLabel}习惯完成进度`:`${periodLabel} Habit Progress`;
+  if(daysLbl)daysLbl.textContent=`${periodLabel}打卡天数`;
+  if(ptsLbl)ptsLbl.textContent=`${periodLabel}努力值`;
+  if(progTitle)progTitle.textContent=`${periodLabel}习惯完成进度`;
 
   // 习惯完成进度：该区间内每个习惯打卡的天数
   const pr=document.getElementById('habit-progress');if(!pr)return;
@@ -3213,8 +3111,8 @@ function renderStatsSummary(){
     const ic=h.customImg?'📌':h.emoji;
     return `<div style="margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
-        <span>${ic} ${h.name}</span>
-        <span>${daysInRange}${T('days')} / ${totalDays}${T('days')}</span>
+        <span>${ic} ${escAttr(h.name)}</span>
+        <span>${daysInRange}${'天'} / ${totalDays}${'天'}</span>
       </div>
       <div style="height:10px;background:#EEE;border-radius:5px;overflow:hidden;">
         <div style="height:100%;width:${pct}%;background:var(--y);border-radius:5px;transition:width .8s var(--ease-spring);"></div>
@@ -3224,80 +3122,160 @@ function renderStatsSummary(){
 }
 
 /* ================================================ LEDGER (pts calendar) */
-let _ledgerYear = null, _ledgerMonth = null;
+let _ledgerYear=null,_ledgerMonth=null;
+// 'earn' | 'spend'  — which tab is active in the detail area
+let _ledgerTab='earn';
+// currently selected date for day-detail
+let _ledgerSelDate=null;
+
 function renderLedger(){
   const el=document.getElementById('ledger-body');if(!el)return;
   const now=new Date();
   if(_ledgerYear===null){_ledgerYear=now.getFullYear();_ledgerMonth=now.getMonth();}
-  const year=_ledgerYear, month=_ledgerMonth;
+  const year=_ledgerYear,month=_ledgerMonth;
   const first=new Date(year,month,1).getDay(),last=new Date(year,month+1,0).getDate();
   const today=todayKey();
   const monthStart=`${year}-${String(month+1).padStart(2,'0')}-01`;
   const monthEnd=`${year}-${String(month+1).padStart(2,'0')}-${String(last).padStart(2,'0')}`;
-  const dayMap={};
-  S.ledger.forEach(l=>{if(!dayMap[l.date])dayMap[l.date]=0;dayMap[l.date]+=(l.sign||1)*l.pts;});
-  const max=Math.max(1,...Object.values(dayMap).map(Math.abs));
-  const wdLabels=S.lang==='en'?['S','M','T','W','T','F','S']:['日','一','二','三','四','五','六'];
   const isCurrentMonth=(year===now.getFullYear()&&month===now.getMonth());
-  // Month-scoped stats
+
+  // Day heat-map: only earned pts color the cells
+  const dayEarnMap={};
+  S.ledger.forEach(l=>{
+    if((l.sign||1)>0){if(!dayEarnMap[l.date])dayEarnMap[l.date]=0;dayEarnMap[l.date]+=l.pts;}
+  });
+  const maxEarn=Math.max(1,...Object.values(dayEarnMap));
+
+  // Month stats
   const monthEarned=S.ledger.filter(l=>l.date>=monthStart&&l.date<=monthEnd&&(l.sign||1)>0).reduce((s,l)=>s+l.pts,0);
-  const monthSpent=S.ledger.filter(l=>l.date>=monthStart&&l.date<=monthEnd&&(l.sign||1)<0).reduce((s,l)=>s+l.pts,0);
-  const isZh=S.lang!=='en';
-  const monthLabel=isZh?`${month+1}月`:`${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][month]}`;
-  let calHtml=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+  const monthSpent =S.ledger.filter(l=>l.date>=monthStart&&l.date<=monthEnd&&(l.sign||1)<0).reduce((s,l)=>s+l.pts,0);
+
+  // Balance up to end of this month (all history up to monthEnd)
+  const monthBalance=S.ledger.filter(l=>l.date<=monthEnd).reduce((s,l)=>s+(l.sign||1)*l.pts,0);
+  const balanceLabel=isCurrentMonth?'当前余额':`${month+1}月末余额`;
+
+  const wdLabels=['日','一','二','三','四','五','六'];
+  let html=`
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
     <button onclick="ledgerNavMonth(-1)" style="width:34px;height:34px;border-radius:12px;border:1.5px solid var(--bdr);background:var(--card);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s var(--ease-spring);" onpointerdown="this.style.transform='scale(.88)'" onpointerup="this.style.transform=''">‹</button>
-    <div style="font-size:14px;font-weight:800;">${year}${S.lang==='en'?'-':`年`}${S.lang==='en'?String(month+1).padStart(2,'0'):month+1+'月'}</div>
+    <div style="font-size:14px;font-weight:800;">${year}年${month+1}月</div>
     <button onclick="ledgerNavMonth(1)" style="width:34px;height:34px;border-radius:12px;border:1.5px solid var(--bdr);background:var(--card);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .2s var(--ease-spring);${isCurrentMonth?'opacity:.4;pointer-events:none;':''}" onpointerdown="this.style.transform='scale(.88)'" onpointerup="this.style.transform=''">›</button>
   </div>
   <div class="ledger-grid">${wdLabels.map(d=>`<div class="ledger-day-lbl">${d}</div>`).join('')}`;
-  for(let i=0;i<first;i++)calHtml+=`<div class="ledger-cell empty">-</div>`;
+
+  for(let i=0;i<first;i++)html+=`<div class="ledger-cell empty">-</div>`;
   for(let d=1;d<=last;d++){
     const key=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const val=dayMap[key]||0;const hasData=val!==0;const isToday=key===today;
-    calHtml+=`<div class="ledger-cell ${hasData?'has-data':''} ${isToday?'today-cell':''}" onclick="showLedgerDay('${key}')" style="background:${hasData?`rgba(245,200,66,${0.3+0.7*Math.abs(val)/max})`:'#F0F0F0'}">${d}</div>`;
+    const val=dayEarnMap[key]||0;const hasData=val>0;const isToday=key===today;
+    const isSel=key===_ledgerSelDate;
+    html+=`<div class="ledger-cell ${hasData?'has-data':''} ${isToday?'today-cell':''}"
+      onclick="showLedgerDay('${key}')"
+      style="background:${hasData?`rgba(245,200,66,${0.25+0.75*val/maxEarn})`:'var(--ol)'};${isSel?'outline:2.5px solid var(--o);outline-offset:1px;':''}">${d}</div>`;
   }
-  calHtml+='</div>';
-  calHtml+=`<div style="display:flex;gap:10px;margin-bottom:14px;">
-    <div class="card" style="flex:1;padding:12px;text-align:center;"><div style="font-size:18px;font-weight:900;color:var(--o);">+${monthEarned}</div><div style="font-size:11px;color:var(--sub);">${monthLabel}${isZh?'累计获得':'Earned'}</div></div>
-    <div class="card" style="flex:1;padding:12px;text-align:center;"><div style="font-size:18px;font-weight:900;color:#E05050;">-${monthSpent}</div><div style="font-size:11px;color:var(--sub);">${monthLabel}${isZh?'累计消费':'Spent'}</div></div>
-    <div class="card" style="flex:1;padding:12px;text-align:center;"><div style="font-size:18px;font-weight:900;">${S.pts}</div><div style="font-size:11px;color:var(--sub);">${isZh?'当前余额':'Balance'}</div></div>
-  </div><div style="font-size:13px;font-weight:800;margin-bottom:8px;color:var(--sub);">${T('clickDateDetail')}</div>
+  html+='</div>';
+
+  // Stats row — earn/spend cards are clickable to switch tab
+  html+=`
+  <div style="display:flex;gap:8px;margin-bottom:14px;">
+    <div id="lcard-earn" class="card" onclick="switchLedgerTab('earn')" style="flex:1;padding:11px 8px;text-align:center;cursor:pointer;transition:box-shadow .15s;">
+      <div style="font-size:17px;font-weight:900;color:var(--o);">+${monthEarned}</div>
+      <div style="font-size:10px;color:var(--sub);margin-top:2px;">${month+1}月累计获得</div>
+    </div>
+    <div id="lcard-spend" class="card" onclick="switchLedgerTab('spend')" style="flex:1;padding:11px 8px;text-align:center;cursor:pointer;transition:box-shadow .15s;">
+      <div style="font-size:17px;font-weight:900;color:#E05050;">-${monthSpent}</div>
+      <div style="font-size:10px;color:var(--sub);margin-top:2px;">${month+1}月累计消费</div>
+    </div>
+    <div class="card" style="flex:1;padding:11px 8px;text-align:center;">
+      <div style="font-size:17px;font-weight:900;">${monthBalance}</div>
+      <div style="font-size:10px;color:var(--sub);margin-top:2px;">${balanceLabel}</div>
+    </div>
+  </div>
   <div id="ledger-detail-area"></div>`;
-  el.innerHTML=calHtml;showLedgerDay(today);
+
+  el.innerHTML=html;
+  // Default: show today's earned detail
+  _ledgerTab='earn';
+  _ledgerSelDate=_ledgerSelDate||today;
+  _applyLedgerTabStyle();
+  showLedgerDay(_ledgerSelDate);
 }
+
 function ledgerNavMonth(dir){
   if(_ledgerYear===null){const n=new Date();_ledgerYear=n.getFullYear();_ledgerMonth=n.getMonth();}
   _ledgerMonth+=dir;
   if(_ledgerMonth>11){_ledgerMonth=0;_ledgerYear++;}
   if(_ledgerMonth<0){_ledgerMonth=11;_ledgerYear--;}
-  // Don't navigate to future months
   const now=new Date();
   if(_ledgerYear>now.getFullYear()||(_ledgerYear===now.getFullYear()&&_ledgerMonth>now.getMonth())){
     _ledgerYear=now.getFullYear();_ledgerMonth=now.getMonth();
   }
+  _ledgerSelDate=null;
   renderLedger();
 }
+
+function switchLedgerTab(tab){
+  _ledgerTab=tab;
+  _applyLedgerTabStyle();
+  // If a date is selected show its detail, otherwise show month list
+  if(_ledgerSelDate) showLedgerDay(_ledgerSelDate);
+  else _showMonthList();
+}
+
+function _applyLedgerTabStyle(){
+  const earn=document.getElementById('lcard-earn');
+  const spend=document.getElementById('lcard-spend');
+  if(!earn||!spend)return;
+  earn.style.boxShadow =_ledgerTab==='earn' ?'0 0 0 2.5px var(--o)':'';
+  spend.style.boxShadow=_ledgerTab==='spend'?'0 0 0 2.5px #E05050':'';
+}
+
 function showLedgerDay(date){
+  _ledgerSelDate=date;
+  // Refresh selected highlight on calendar cells
+  document.querySelectorAll('.ledger-cell').forEach(c=>{
+    c.style.outline=c.getAttribute('onclick')===`showLedgerDay('${date}')`?'2.5px solid var(--o)':'';
+    c.style.outlineOffset='1px';
+  });
   const el=document.getElementById('ledger-detail-area');if(!el)return;
-  const entries=S.ledger.filter(l=>l.date===date);
-  if(!entries.length){el.innerHTML=`<div class="ledger-detail" style="text-align:center;color:var(--sub);font-size:13px;">${T('noDataForDate')}</div>`;return;}
-  const net=entries.reduce((s,l)=>s+(l.sign||1)*l.pts,0);
-  el.innerHTML=`<div class="ledger-detail"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><span style="font-size:13px;font-weight:800;">${date===todayKey()?T('today'):date}</span><span style="font-size:13px;font-weight:800;color:${net>=0?'var(--o)':'#E05050'};">${net>=0?'+':''}${net}⚡</span></div>`+
-  entries.map(l=>{
-    const timeStr=l.ts?new Date(l.ts).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}):'';
-    return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #EEE;font-size:12px;align-items:center;">
-      <div><div style="color:var(--sub);">${l.name}</div>${timeStr?`<div style="font-size:10px;color:var(--sub);opacity:.7;margin-top:1px;">🕐 ${timeStr}</div>`:''}
-      </div><span style="font-weight:800;color:${l.sign>0?'var(--o)':'#E05050'};flex-shrink:0;margin-left:8px;">${l.sign>0?'+':''}${l.sign*l.pts}⚡</span></div>`;
-  }).join('')+
+  const sign=_ledgerTab==='earn'?1:-1;
+  const entries=S.ledger.filter(l=>l.date===date&&(l.sign||1)===sign);
+  const dateLabel=date===todayKey()?'今天':date;
+  const tabLabel=_ledgerTab==='earn'?'获得明细':'消费明细';
+  const tabColor=_ledgerTab==='earn'?'var(--o)':'#E05050';
+  if(!entries.length){
+    el.innerHTML=`<div class="ledger-detail" style="text-align:center;color:var(--sub);font-size:13px;padding:18px 0;">${dateLabel} 暂无${tabLabel}</div>`;
+    return;
+  }
+  const total=entries.reduce((s,l)=>s+l.pts,0);
+  el.innerHTML=`<div class="ledger-detail">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span style="font-size:13px;font-weight:800;">${dateLabel} · ${tabLabel}</span>
+      <span style="font-size:13px;font-weight:900;color:${tabColor};">${_ledgerTab==='earn'?'+':'−'}${total}⚡</span>
+    </div>`+
+    entries.map(l=>{
+      const timeStr=l.ts?new Date(l.ts).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}):'';
+      return `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--ol);font-size:12px;align-items:center;">
+        <div>
+          <div style="font-weight:600;color:var(--text);">${l.name}</div>
+          ${timeStr?`<div style="font-size:10px;color:var(--sub);margin-top:2px;">🕐 ${timeStr}</div>`:''}
+        </div>
+        <span style="font-weight:800;color:${tabColor};flex-shrink:0;margin-left:8px;">${_ledgerTab==='earn'?'+':'−'}${l.pts}⚡</span>
+      </div>`;
+    }).join('')+
   '</div>';
+}
+
+function _showMonthList(){
+  const el=document.getElementById('ledger-detail-area');if(!el)return;
+  el.innerHTML='';
 }
 
 /* ================================================ MAKEUP */
 function openMakeup(){
   const h=S.habits.find(x=>x.id===calHabitId);if(!h)return;
-  document.getElementById('makeup-title').textContent=(h.emoji||'')+(S.lang==='en'?' Makeup Checkin':' 补卡');
+  document.getElementById('makeup-title').textContent=(h.emoji||'')+' 补卡';
   const maxPD=Math.max(1,h.maxCkPerDay||1);
-  document.getElementById('makeup-desc').textContent=S.lang==='en'?`Select a date to makeup (last 30 days, up to ${maxPD}x/day)`:`选择要补卡的日期（最近30天，每日最多${maxPD}次）`;
+  document.getElementById('makeup-desc').textContent=`选择要补卡的日期（最近30天，每日最多${maxPD}次）`;
   // Build last 30 days list with per-date check count
   const today=new Date();const rows=[];
   for(let i=1;i<=30;i++){
@@ -3336,7 +3314,7 @@ function doMakeup(key,alreadyFull){
   S.ledger.unshift({ts:Date.now(),date:key,type:'makeup',name:h.name+'(补卡)',pts:h.pts,sign:1});
   S.records.unshift({date:key,id:h.id,name:h.name,emoji:h.emoji,pts:h.pts,customImg:h.customImg||'',makeup:true});
   save();renderHabits();renderCalendar(h,calViewDate);
-  launchFW();
+  
   // If still can add more, refresh makeup modal; otherwise close it
   const newCount=existingCount+1;
   if(newCount<maxPD){
@@ -3348,51 +3326,48 @@ function doMakeup(key,alreadyFull){
   }
 }
 
-/* ================================================ FOCUS 功能已删除（需求第一部分-1）
- * 已移除：toggleTimer, resetTimer, setCustomTimer, quickTimer, updT,
- *          renderFocusLog, renderFocusPage, tSec/tTotal/tRun/tIv/ARC变量
- * focusLogs数据字段保留（不影响旧数据兼容性），但不再在UI中展示。
- */
-
 /* ================================================ MISC */
 function exportData(){const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='habits_v6.json';a.click();URL.revokeObjectURL(url);showToast('数据已导出');}
-function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);S=Object.assign(S,d);ensureFields();save();renderHabits();updateMyStats();applyAllSettings();showToast('导入成功 🎉');}catch(err){showToast('文件格式错误');}};r.readAsText(f);}
-const HELPS_ZH=[{q:'打卡天数统计规则',a:'打卡天数按"打卡过的不重复日期"计算，多次打卡只算一天，完全正确。'},{q:'如何撤销打卡？',a:'长按首页习惯卡片，弹出打卡日历后点击"撤销今日最后一次打卡"即可。'},{q:'如何补卡？',a:'长按首页习惯卡片打开日历，点击"补卡"，选择要补的历史日期即可。'},{q:'如何查看努力值明细？',a:'在"我的"页面点击努力值数字，用日历查看每天的获得/消费情况。'},{q:'转盘权重怎么设置？',a:'在转盘项目编辑中设置权重，权重越大被选中概率越高。'},{q:'心愿如何编辑？',a:'在心愿商城长按任意心愿卡片，即可弹出编辑界面。'},{q:'头像如何更换？',a:'点击"我的"页面头像即可选择默认头像或从相册上传自定义头像。'},{q:'如何切换夜间模式？',a:'在"我的"→"样式设置"中选择显示模式：跟随系统/日间/夜间。'},{q:'如何切换语言？',a:'在"样式设置"底部选择语言，支持中文和English。'}];
-const HELPS_EN=[{q:'How are streak days counted?',a:'Streak days count unique dates when you checked in. Multiple check-ins on the same day count as one day.'},{q:'How to undo a check-in?',a:'Long press a habit card to open the calendar, then tap "Undo today\'s last check-in".'},{q:'How to makeup check-in?',a:'Long press a habit, open calendar, tap "Makeup Checkin", select a past missed date.'},{q:'How to view points ledger?',a:'Tap your points on the My page, view daily earn/spend with calendar.'},{q:'How to set spinner weights?',a:'Edit any spinner item and set its weight. Higher weight = higher probability.'},{q:'How to edit a wish?',a:'Long press any wish card in the Wish Mall to open its edit form.'},{q:'How to change avatar?',a:'Tap your avatar on the My page to pick a default emoji or upload a custom image.'},{q:'How to switch dark mode?',a:'Go to My → Style Settings → Display Mode.'},{q:'How to change language?',a:'In Style Settings, tap English or 中文 at the bottom.'}];
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  // Security: only allow files up to 5MB
+  if(f.size>5*1024*1024){showToast('文件过大，最大支持 5MB');return;}
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(typeof d!=='object'||Array.isArray(d)||d===null)throw new Error('invalid');
+      // Security: whitelist allowed fields — prevents malicious JSON from overwriting arbitrary state
+      const ALLOWED_IMPORT_KEYS=['habits','wishes','spinItems','flipItems','secretItems',
+        'diaryEntries','records','ledger','pts','nick','avatar','avatarImg',
+        'bgId','bgCustom'];
+      const safe={};
+      ALLOWED_IMPORT_KEYS.forEach(k=>{if(k in d)safe[k]=d[k];});
+      S=Object.assign(S,safe);
+      ensureFields();save();renderHabits();updateMyStats();applyAllSettings();
+      showToast('导入成功 🎉');
+    }catch(err){showToast('文件格式错误');}
+  };
+  r.readAsText(f);
+}
+const HELPS=[{q:'打卡天数统计规则',a:'打卡天数按"打卡过的不重复日期"计算，同一天多次打卡只算一天。'},{q:'如何撤销打卡？',a:'长按首页习惯卡片，在弹出菜单中选择补卡进入日历，点击"撤销打卡"即可。'},{q:'如何补卡？',a:'长按首页习惯卡片打开菜单，选择补卡，再选择要补的历史日期即可。'},{q:'如何查看努力值明细？',a:'在"我的"页面点击努力值数字，可用日历查看每天的获得/消费情况。'},{q:'转盘权重怎么设置？',a:'在转盘项目编辑中设置权重，权重越大被选中概率越高。'},{q:'心愿/习惯如何编辑？',a:'长按首页习惯卡片或心愿商城的心愿卡片，即可弹出编辑/删除选项。'},{q:'头像如何更换？',a:'点击"我的"页面左上角头像，可选择默认头像或从相册上传自定义头像。'},{q:'夜间模式如何开启？',a:'App 会自动跟随系统深色模式切换，在手机系统设置中开启深色模式即可。'}];
+
 function renderHelp(){
-  const HELPS=HELPS_ZH;
   const el=document.getElementById('help-body');if(!el)return;
   el.innerHTML=HELPS.map((h,i)=>`<div style="border:1.5px solid var(--bdr);border-radius:16px;margin-bottom:10px;overflow:hidden;"><div class="help-q" onclick="toggleHelp(${i})"><span>${h.q}</span><span id="ha${i}" style="color:var(--sub);">▼</span></div><div class="help-a" id="hb${i}">${h.a}</div></div>`).join('');
 }
 function toggleHelp(i){const b=document.getElementById('hb'+i);const a=document.getElementById('ha'+i);const o=b.classList.contains('open');b.classList.toggle('open',!o);a.textContent=o?'▼':'▲';}
-function renderMsg(){const el=document.getElementById('msg-body');if(!el)return;const msgs=[{ico:'🎉',t:'v6.0 '+T('update'),b:T('v6desc'),time:T('today')},{ico:'🌙',t:T('darkModeMsg'),b:T('darkModeDesc'),time:T('today')},{ico:'🌍',t:T('langMsg'),b:T('langDesc'),time:T('today')}];el.innerHTML=msgs.map(m=>`<div style="display:flex;gap:12px;padding:14px;background:var(--card);border:1.5px solid var(--bdr);border-radius:18px;margin-bottom:10px;box-shadow:2px 2px 0 var(--bdr);"><div style="font-size:28px;">${m.ico}</div><div style="flex:1;"><div style="font-size:14px;font-weight:800;margin-bottom:3px;">${m.t}</div><div style="font-size:12px;color:var(--sub);">${m.b}</div></div><div style="font-size:11px;color:var(--sub);flex-shrink:0;">${m.time}</div></div>`).join('');}
+function renderMsg(){const el=document.getElementById('msg-body');if(!el)return;const msgs=[{ico:'🌟',t:'欢迎使用习惯打卡',b:'坚持打卡，积累努力值，在心愿商城兑换奖励！'},{ico:'💡',t:'小技巧',b:'长按首页习惯卡片，可以补卡、编辑或删除习惯。'},{ico:'🎡',t:'幸运转盘 & 翻牌抽奖',b:'在「我的」页面可以用转盘和翻牌赢取额外奖励！'}];el.innerHTML=msgs.map(m=>`<div style="display:flex;gap:12px;padding:14px;background:var(--card);border:1.5px solid var(--bdr);border-radius:18px;margin-bottom:10px;box-shadow:2px 2px 0 var(--bdr);"><div style="font-size:28px;">${m.ico}</div><div style="flex:1;"><div style="font-size:14px;font-weight:800;margin-bottom:3px;">${m.t}</div><div style="font-size:12px;color:var(--sub);">${m.b}</div></div></div>`).join('');}
+
 function saveSettings(){const n=document.getElementById('set-nick').value.trim();if(n){S.nick=n;document.getElementById('my-nick').textContent=n;}save();showToast('设置已保存');}
 function clearAllData(){
-  const lang=(typeof S!=='undefined'&&S.lang)||'zh';
   showCustomConfirm(
-    lang==='en'?'Clear All Data':'清空所有数据',
-    lang==='en'?'This will permanently delete all local habits, wishes, and records. Cloud data remains until next sync.':'此操作将清空本地所有习惯、心愿和记录数据，云端数据在下次同步前不受影响。',
-    lang==='en'?'Clear':'确认清空','#E05050'
+    '清空所有数据',
+    '此操作将清空本地所有习惯、心愿和记录数据，云端数据在下次同步前不受影响。',
+    '确认清空','#E05050'
   ).then(ok=>{if(!ok)return;localStorage.removeItem('hbt7');location.reload();});
 }
-function setTheme(y,o,l,el){document.documentElement.style.setProperty('--y',y);document.documentElement.style.setProperty('--o',o);document.documentElement.style.setProperty('--ol',l);document.querySelectorAll('#panel-style .color-dot').forEach(d=>d.classList.remove('sel'));if(el)el.classList.add('sel');document.body.classList.remove('dog');S.theme={y,o,l};save();showToast('主题已切换');}
-function applyDogTheme(){} // removed
-function resetTheme(){document.body.classList.remove('dog');S.theme=null;save();setTheme('#F5C842','#F5A623','#FDE8C8',null);} // kept for data compat
 
-/* --- DARK MODE --- */
-function setMode(mode){
-  S.darkMode=mode;save();applyDarkMode();
-  ['mode-auto','mode-light','mode-dark'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='mode-btn'+(id===('mode-'+mode)?' active':'');});
-  showToast(T('modeChanged'));
-}
-function applyDarkMode(){
-  const mode=S.darkMode||'auto';
-  const prefersDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
-  const isDark=mode==='dark'||(mode==='auto'&&prefersDark);
-  document.body.classList.toggle('dark',isDark);
-  document.body.classList.toggle('force-light',mode==='light');
-  document.body.classList.toggle('force-dark',mode==='dark');
-}
 
 /* --- BACKGROUNDS --- */
 const DEFAULT_BGS=[
@@ -3427,165 +3402,15 @@ function applyBg(){
   if(bg&&bg.css){document.documentElement.style.setProperty('--bg-img',bg.css);document.body.classList.add('has-bg');}
 }
 
-/* --- LANGUAGE --- */
-const I18N={
-  zh:{
-    today:'今天',noRecords:'暂无记录',checkinOk:'打卡成功',times:'次',days:'天',
-    totalEarned:'累计获得',totalSpent:'累计消费',balance:'当前余额',
-    clickDateDetail:'点击日期查看明细',noDataForDate:'该日期暂无记录',
-    makeupOk:'补卡成功',alreadyChecked:'该日已打卡',clickToMakeup:'点击补卡',
-    exported:'数据已导出',imported:'导入成功 🎉',fileErr:'文件格式错误',
-    saved:'设置已保存',confirmClear:'确定清空所有数据？',
-    themeChanged:'主题已切换',dogTheme:'小狗主题已开启！',fontChanged:'字体已调整',
-    modeChanged:'模式已切换',bgChanged:'背景已更换',
-    start:'开始',resume:'继续',pause:'暂停',restart:'重新开始',
-    focus:'专注',min:'分钟',focusDone:'专注完成！',
-    thisWeekCheckins:'本周打卡',
-    update:'更新',v6desc:'自定义背景、夜间模式、补卡、英文支持！',
-    darkModeMsg:'夜间模式上线',darkModeDesc:'在样式设置中可切换日/夜/系统模式。',
-    langMsg:'多语言支持',langDesc:'现已支持中文与English双语切换。',
-    // Modal labels
-    addHabit:'添加习惯',editHabit:'编辑习惯',habitName:'习惯名称',
-    habitNamePH:'如：早起晨跑',icon:'图标',uploadIcon:'📷 从相册上传图标',
-    cardColor:'卡片颜色',ptsPerCheckin:'每次打卡获得努力值 ⚡',
-    dailyLimit:'每日打卡上限次数（0=不限）',totalStock:'总库存上限（0=不限）',
-    saveBtn:'保存',deleteBtn:'删除',
-    addWish:'添加心愿',editWish:'编辑心愿',wishName:'心愿名称',
-    wishNamePH:'如：买一双球鞋',wishDesc:'心愿描述（选填）',wishDescPH:'描述一下…',
-    wishCost:'兑换所需努力值 ⚡',wishStock:'可兑换次数/库存（0=不限）',
-    // Focus page
-    focusMode:'⏱ 专注模式',focusingLbl:'专注中',customDuration:'自定义时长（分钟）',
-    setBtn:'设置',focusRecord:'专注记录',
-    // Stats page
-    statsTitle:'📊 数据统计',checkinDays:'打卡天数',totalPts:'总努力值',habitProgress:'习惯完成进度',
-    // My page
-    ledgerHint:'点击查看明细',
-    // Settings
-    myNick:'我的昵称',myNickPH:'习惯达人',
-    // Style
-    displayMode:'显示模式',bgSetting:'背景设置',themeColor:'主题颜色',
-    defaultTheme:'默认主题',fontSize:'字体大小',fontSm:'小',fontMd:'中',fontLg:'大',
-    langLabel:'语言 / Language',
-    // All page
-    allHabits:'📋 全部习惯',dragTip:'长按拖动排序',addHabitBtn:'＋ 添加新习惯',
-    noAchievements:'暂无成就',
-    dailyLimitReached:'今日已达上限',
-    // 【第二部分-2】新增翻译键
-    filterAll:'全部',filterTodo:'未打卡',filterDone:'已完成',
-    kept:'坚持',timesPerDay:'次/天',stock:'库存',addHabitCard:'添加习惯',
-    noticeDone:'今日完成 {done}/{total} 个习惯 💪',
-    habitCount:'习惯数',
-    // 随记面板
-    diaryNoEntry:'暂无随记，点击右上角新建 📝',
-    diaryUntitled:'无标题',diaryNoContent:'（无内容）',diaryPinned:'📌 日程',
-    // All列表硬编码文字
-    keptShort:'坚持',perDay:'次',stockShort:'库存',
-    // Auth / account
-    inviteCodeInvalid:'邀请码无效',inviteCodeUsed:'该邀请码已被占用',
-    passwordMismatch:'两次密码不一致',verifyEmailSent:'验证邮件已发送，请查收邮箱完成验证',
-    resetEmailSent:'密码重置邮件已发送，请查收邮箱',emailNotRegistered:'该邮箱未注册',
-    deleteAccountConfirmTitle:'注销账号',
-    deleteAccountConfirmMsg:'此操作不可撤销，所有云端数据将被永久删除，本地数据保留。',
-    requiresRecentLogin:'为确保安全，请重新登录后再试',
-  },
-  en:{
-    today:'Today',noRecords:'No records yet',checkinOk:'Checked in',times:'times',days:'d',
-    totalEarned:'Earned',totalSpent:'Spent',balance:'Balance',
-    clickDateDetail:'Tap a date to see details',noDataForDate:'No data for this date',
-    makeupOk:'Makeup done',alreadyChecked:'Already checked in',clickToMakeup:'Tap to makeup',
-    exported:'Exported',imported:'Imported 🎉',fileErr:'Invalid file format',
-    saved:'Saved',confirmClear:'Clear all data?',
-    themeChanged:'Theme changed',dogTheme:'Dog theme on!',fontChanged:'Font size updated',
-    modeChanged:'Mode changed',bgChanged:'Background changed',
-    start:'Start',resume:'Resume',pause:'Pause',restart:'Restart',
-    focus:'Focus',min:'min',focusDone:'Focus complete!',
-    thisWeekCheckins:'This Week',
-    update:'Update',v6desc:'Custom background, dark mode, makeup checkin, English support!',
-    darkModeMsg:'Dark Mode',darkModeDesc:'Switch light/dark/auto in Style Settings.',
-    langMsg:'Multi-language',langDesc:'Now supports English and 中文.',
-    // Modal labels
-    addHabit:'Add Habit',editHabit:'Edit Habit',habitName:'Habit Name',
-    habitNamePH:'e.g. Morning Run',icon:'Icon',uploadIcon:'📷 Upload Icon',
-    cardColor:'Card Color',ptsPerCheckin:'Points per check-in ⚡',
-    dailyLimit:'Daily check-in limit (0=unlimited)',totalStock:'Total stock (0=unlimited)',
-    saveBtn:'Save',deleteBtn:'Delete',
-    addWish:'Add Wish',editWish:'Edit Wish',wishName:'Wish Name',
-    wishNamePH:'e.g. Buy new shoes',wishDesc:'Description (optional)',wishDescPH:'Describe it…',
-    wishCost:'Points required ⚡',wishStock:'Stock / redemption limit (0=unlimited)',
-    // Focus page
-    focusMode:'⏱ Focus Mode',focusingLbl:'Focusing',customDuration:'Custom duration (minutes)',
-    setBtn:'Set',focusRecord:'Focus Log',
-    // Stats page
-    statsTitle:'📊 Statistics',checkinDays:'Check-in Days',totalPts:'Total Points',habitProgress:'Habit Progress',
-    // My page
-    ledgerHint:'Tap to view details',
-    // Settings
-    myNick:'Nickname',myNickPH:'Habit Hero',
-    // Style
-    displayMode:'Display Mode',bgSetting:'Background',themeColor:'Theme Color',
-    defaultTheme:'Default',fontSize:'Font Size',fontSm:'S',fontMd:'M',fontLg:'L',
-    langLabel:'Language / 语言',
-    // All page
-    allHabits:'📋 All Habits',dragTip:'Drag to reorder',addHabitBtn:'＋ Add Habit',
-    noAchievements:'No achievements yet',
-    dailyLimitReached:'Daily limit reached',
-    // 【第二部分-2】新增翻译键
-    filterAll:'All',filterTodo:'To-do',filterDone:'Done',
-    kept:'',timesPerDay:'x/day',stock:'Stock: ',addHabitCard:'Add Habit',
-    noticeDone:'Done today: {done}/{total} 💪',
-    habitCount:'Habits',
-    // Diary panel
-    diaryNoEntry:'No notes yet. Tap + New to create 📝',
-    diaryUntitled:'Untitled',diaryNoContent:'(No content)',diaryPinned:'📌 Scheduled',
-    // All list
-    keptShort:'',perDay:'x',stockShort:'Stock',
-    // Auth / account
-    inviteCodeInvalid:'Invalid invite code',inviteCodeUsed:'Invite code already used',
-    passwordMismatch:'Passwords do not match',verifyEmailSent:'Verification email sent! Please check your inbox.',
-    resetEmailSent:'Password reset email sent! Please check your inbox.',emailNotRegistered:'This email is not registered',
-    deleteAccountConfirmTitle:'Delete Account',
-    deleteAccountConfirmMsg:'This action is irreversible. All cloud data will be permanently deleted. Local data will be kept.',
-    requiresRecentLogin:'Please log in again to perform this action',
-  }
-};
-function T(key){return(I18N[S.lang||'zh']||I18N.zh)[key]||key;}
 function applyAllSettings(){
   applyBg();
-  // font (kept for data compat even though UI removed)
-  if(S.fontSize)document.documentElement.style.fontSize=S.fontSize+'px';
-  // theme (dog theme removed; only custom color themes apply)
-  if(S.theme&&S.theme!=='dog'&&S.theme.y){document.body.classList.remove('dog');document.documentElement.style.setProperty('--y',S.theme.y);document.documentElement.style.setProperty('--o',S.theme.o);document.documentElement.style.setProperty('--ol',S.theme.l);}
-  document.body.classList.remove('dog'); // always remove dog class
 }
 
-/* ================================================ FIREWORKS */
-function launchFW(){
-  const c=document.getElementById('fw-canvas');c.style.display='block';c.width=window.innerWidth;c.height=window.innerHeight;
-  const ctx=c.getContext('2d');const ps=[];const cols=['#F5C842','#F5A623','#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#DDA0DD'];
-  for(let b=0;b<3;b++){const bx=c.width*(0.25+Math.random()*.5);const by=c.height*(0.15+Math.random()*.4);setTimeout(()=>{for(let i=0;i<50;i++){const a=Math.random()*Math.PI*2;const sp=1.5+Math.random()*5;ps.push({x:bx,y:by,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,life:1,col:cols[Math.floor(Math.random()*cols.length)],r:2+Math.random()*4,g:.1});}},b*220);}
-  let raf;function draw(){ctx.clearRect(0,0,c.width,c.height);for(let i=ps.length-1;i>=0;i--){const p=ps[i];p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.life-=0.016;p.vx*=.972;if(p.life<=0){ps.splice(i,1);continue;}ctx.save();ctx.globalAlpha=p.life*p.life;ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.restore();}if(ps.length>0)raf=requestAnimationFrame(draw);else{c.style.display='none';}}cancelAnimationFrame(raf);draw();setTimeout(()=>{c.style.display='none';ctx.clearRect(0,0,c.width,c.height);},3500);
-}
 
 /* ================================================ MODAL / PANEL / PAGE */
 function openModal(id){const el=document.getElementById(id);if(!el)return;el.classList.add('open');}
 function closeModal(id){const el=document.getElementById(id);if(!el)return;el.classList.remove('open');}
-function openPanel(id){
-  // Legacy compat: map panel IDs to page IDs
-  const panelToPage = {
-    'panel-wish':'page-wish','panel-spinner':'page-spinner','panel-flip':'page-flip',
-    'panel-flip-config':'page-flip-config','panel-records':'page-records',
-    'panel-ledger':'page-ledger','panel-help':'page-help','panel-msg':'page-msg',
-    'panel-diary':'page-diary','panel-style':'page-style','panel-about':'page-about',
-    'panel-backup':'page-setting','panel-setting':'page-setting',
-  };
-  const pg = panelToPage[id];
-  if(pg) { navigateTo(pg); return; }
-  // fallback: try direct page
-  const pg2 = id.replace('panel-','page-');
-  navigateTo(pg2);
-}
-function closePanel(id){ goBack(); }
-/* 【第一部分-1】PAGES中已移除'focus' */
+
 const PAGES=['home','stats','my'];
 function switchPage(name){
   document.querySelectorAll('.overlay.open').forEach(o=>o.classList.remove('open'));
@@ -3605,7 +3430,6 @@ function switchPage(name){
   if(name==='home')renderSchedule();
 }
 function toggleDD(){document.getElementById('dd-menu').classList.toggle('open');}
-/* 【第二部分-2】selFilter接收key(all/todo/done)，根据当前语言显示对应文字 */
 function selFilter(v){
   curFilter=v;
   const labelMap={all:'全部',todo:'未打卡',done:'已完成'};
@@ -3626,8 +3450,6 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 
 /* ================================================ CARD SHAKE */
 const ss=document.createElement('style');ss.textContent='@keyframes cardShake{0%,100%{transform:translateY(0);}15%{transform:translateY(-8px) rotate(-2deg);}35%{transform:translateY(4px) rotate(1.5deg);}55%{transform:translateY(-5px) rotate(-1deg);}75%{transform:translateY(2px) rotate(.5deg);}90%{transform:translateY(-2px);}}';document.head.appendChild(ss);
-
-/* 【第三部分-1】日期格式化：中文显示 "4月14日"，英文显示 "Apr 14" */
 function formatScheduleDate(dateStr){
   const parts=dateStr.split('-');
   if(parts.length<3)return dateStr;
@@ -3772,7 +3594,7 @@ function loadDiaryEntryForEdit(entryOrObj){
   document.getElementById('diary-date-display').textContent=e.date||todayKey();
   document.getElementById('diary-time-display').textContent=e.time||new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('diary-title-input').value=e.title||'';
-  document.getElementById('diary-content-area').innerHTML=e.content||'';
+  document.getElementById('diary-content-area').innerHTML=safeHTML(e.content||'');
   document.getElementById('diary-pin-cb').checked=!!e.isPinned;
   // Weather
   document.querySelectorAll('.diary-weather-opt').forEach(o=>{o.classList.toggle('sel',o.dataset.w===(e.weather||'☀️'));});
@@ -3983,47 +3805,101 @@ let _cropDragging=false,_cropLastX=0,_cropLastY=0;
 let _cropPinchDist=0;
 let _cropTargetType=''; // 'habit','wish','secret','avatar','bg'
 
+// Detect HEIC/HEIF by ftyp box in file header (magic bytes)
+// Returns promise<boolean>
+function isHeicFile(file){
+  return new Promise(resolve=>{
+    const slice=file.slice(4,12);
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const bytes=new Uint8Array(e.target.result);
+      // ftyp brands: heic, heix, hevc, hevx, heim, heis, hevm, hevs, mif1, msf1
+      const brand=String.fromCharCode(bytes[0],bytes[1],bytes[2],bytes[3]);
+      const sub=String.fromCharCode(bytes[4],bytes[5],bytes[6],bytes[7]);
+      const heicBrands=['heic','heix','hevc','hevx','heim','heis','hevm','hevs','mif1','msf1'];
+      resolve(heicBrands.includes(brand)||heicBrands.includes(sub));
+    };
+    reader.onerror=()=>resolve(false);
+    reader.readAsArrayBuffer(slice);
+  });
+}
+
 function triggerImgCrop(inputId,targetType){
   const input=document.getElementById(inputId);
   if(!input)return;
   _cropTargetType=targetType;
-  // Set up change handler each time
-  input.onchange=function(e){
+  input.value='';
+  input.onchange=async function(e){
     const file=e.target.files[0];
     if(!file){return;}
     if(file.size>10*1024*1024){showToast('图片不能超过10MB');return;}
-    const reader=new FileReader();
-    reader.onload=ev=>openCropModal(ev.target.result,targetType);
-    reader.readAsDataURL(file);
     input.value='';
+    // Pre-check for HEIC/HEIF which Android WebView cannot decode
+    const heicCheck=await isHeicFile(file).catch(()=>false);
+    if(heicCheck){showToast('不支持 HEIC 格式，请在相册中转存为 JPG 后再上传');return;}
+    // createImageBitmap decodes the file and applies EXIF rotation.
+    // If it fails (e.g. HEIC/HEIF not supported by the browser), we try
+    // loading via a blob URL in an <img> element instead.
+    // If that also fails (naturalWidth===0), we tell the user to convert first.
+    createImageBitmap(file).then(bitmap=>{
+      const tmp=document.createElement('canvas');
+      tmp.width=bitmap.width; tmp.height=bitmap.height;
+      tmp.getContext('2d').drawImage(bitmap,0,0);
+      bitmap.close();
+      openCropModal(tmp.toDataURL('image/jpeg',0.92),targetType);
+    }).catch(()=>{
+      // createImageBitmap failed — try blob URL approach
+      const blobUrl=URL.createObjectURL(file);
+      const testImg=new Image();
+      testImg.onload=()=>{
+        if(testImg.naturalWidth===0){
+          URL.revokeObjectURL(blobUrl);
+          showToast('不支持此图片格式（如 HEIC），请先转换为 JPG/PNG');
+          return;
+        }
+        const tmp=document.createElement('canvas');
+        tmp.width=testImg.naturalWidth; tmp.height=testImg.naturalHeight;
+        tmp.getContext('2d').drawImage(testImg,0,0);
+        URL.revokeObjectURL(blobUrl);
+        openCropModal(tmp.toDataURL('image/jpeg',0.92),targetType);
+      };
+      testImg.onerror=()=>{
+        URL.revokeObjectURL(blobUrl);
+        showToast('不支持此图片格式（如 HEIC），请先转换为 JPG/PNG');
+      };
+      testImg.src=blobUrl;
+    });
   };
   input.click();
 }
 
+// _cropFitScale: minimum scale that fills the crop frame (no black bars)
+let _cropFitScale=1;
+
 function openCropModal(dataUrl,targetType){
   _cropTargetType=targetType;
   const overlay=document.getElementById('crop-overlay');
-  const img=document.getElementById('crop-img');
   const slider=document.getElementById('crop-scale');
-  slider.value=100;
-  document.getElementById('crop-scale-lbl').textContent='100%';
-  img.onload=()=>{
-    _cropImgNaturalW=img.naturalWidth;
-    _cropImgNaturalH=img.naturalHeight;
-    const container=document.getElementById('crop-container');
-    const cw=container.offsetWidth;
-    // Initial scale: fit image to fill crop area
-    const fitScale=Math.max(cw/_cropImgNaturalW,cw/_cropImgNaturalH);
-    _cropScale=fitScale;
-    _cropX=0;_cropY=0;
-    slider.min=Math.round(fitScale*50);
-    slider.max=Math.round(fitScale*500);
-    slider.value=Math.round(_cropScale*100);
-    _applyCropTransform();
-  };
-  img.src=dataUrl;
+  // Show overlay FIRST so browser performs layout, then load image
   overlay.classList.add('open');
   _initCropEvents();
+  // Wait two rAF frames so container.offsetWidth is valid before img.onload fires
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const img=document.getElementById('crop-img');
+    img.onload=()=>{
+      _cropImgNaturalW=img.naturalWidth;
+      _cropImgNaturalH=img.naturalHeight;
+      const container=document.getElementById('crop-container');
+      const cw=container.offsetWidth||Math.min(320,window.innerWidth*0.9);
+      _cropFitScale=Math.max(cw/_cropImgNaturalW,cw/_cropImgNaturalH);
+      _cropScale=_cropFitScale;
+      _cropX=0;_cropY=0;
+      slider.min=100;slider.max=400;slider.value=100;
+      document.getElementById('crop-scale-lbl').textContent='×1';
+      _applyCropTransform();
+    };
+    img.src=dataUrl;
+  }));
 }
 
 function closeCropModal(){
@@ -4033,22 +3909,27 @@ function closeCropModal(){
 function _applyCropTransform(){
   const img=document.getElementById('crop-img');
   const container=document.getElementById('crop-container');
-  const cw=container.offsetWidth;
+  const cw=container.offsetWidth||Math.min(320,window.innerWidth*0.9);
   const w=_cropImgNaturalW*_cropScale;
   const h=_cropImgNaturalH*_cropScale;
-  // Clamp position
-  const maxX=(w-cw)/2;const maxY=(h-cw)/2;
+  // Clamp: image must always cover the crop frame fully (no black)
+  // maxOffset = how far center can move before edge is exposed
+  const maxX=Math.max(0,(w-cw)/2);
+  const maxY=Math.max(0,(h-cw)/2);
   _cropX=Math.max(-maxX,Math.min(maxX,_cropX));
   _cropY=Math.max(-maxY,Math.min(maxY,_cropY));
-  img.style.width=w+'px';img.style.height=h+'px';
+  img.style.width=w+'px';
+  img.style.height=h+'px';
   img.style.left=((cw-w)/2+_cropX)+'px';
   img.style.top=((cw-h)/2+_cropY)+'px';
 }
 
 function cropOnScale(){
   const slider=document.getElementById('crop-scale');
-  _cropScale=parseInt(slider.value)/100;
-  document.getElementById('crop-scale-lbl').textContent=Math.round(_cropScale*100)+'%';
+  // scale = fitScale * sliderVal/100  (slider 100=1× … 400=4×)
+  _cropScale=_cropFitScale*(parseInt(slider.value)/100);
+  const displayX=(parseInt(slider.value)/100).toFixed(1);
+  document.getElementById('crop-scale-lbl').textContent=displayX+'×';
   _applyCropTransform();
 }
 
@@ -4073,10 +3954,12 @@ function _initCropEvents(){
     } else if(e.touches.length===2){
       const newDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
       const ratio=newDist/(_cropPinchDist||newDist);
-      _cropScale*=ratio;_cropPinchDist=newDist;
+      _cropScale=Math.max(_cropFitScale,_cropScale*ratio);
+      _cropPinchDist=newDist;
       const slider=document.getElementById('crop-scale');
-      slider.value=Math.round(_cropScale*100);
-      document.getElementById('crop-scale-lbl').textContent=Math.round(_cropScale*100)+'%';
+      const sv=Math.round((_cropScale/_cropFitScale)*100);
+      slider.value=Math.min(400,Math.max(100,sv));
+      document.getElementById('crop-scale-lbl').textContent=(_cropScale/_cropFitScale).toFixed(1)+'×';
       _applyCropTransform();
     }
     e.preventDefault();
@@ -4087,17 +3970,24 @@ function _initCropEvents(){
 function confirmCrop(){
   const img=document.getElementById('crop-img');
   const container=document.getElementById('crop-container');
-  const cw=container.offsetWidth;
+  const cw=container.offsetWidth||Math.min(320,window.innerWidth*0.9);
   const canvas=document.createElement('canvas');
-  canvas.width=400;canvas.height=400;
+  const OUT=400;
+  canvas.width=OUT;canvas.height=OUT;
   const ctx=canvas.getContext('2d');
+  // Correct 9-arg drawImage: sample source pixels directly from the natural image.
+  // Rendered image size on screen:
   const w=_cropImgNaturalW*_cropScale;
   const h=_cropImgNaturalH*_cropScale;
-  const offsetX=(cw-w)/2+_cropX;
-  const offsetY=(cw-h)/2+_cropY;
-  // Scale ratio: canvas 400px represents cw px in screen
-  const ratio=400/cw;
-  ctx.drawImage(img,offsetX*ratio,offsetY*ratio,w*ratio,h*ratio);
+  // Offset from rendered-image-top-left to crop-frame-top-left (screen px):
+  //   image top-left on screen = (cw-w)/2 + _cropX
+  //   frame top-left on screen = 0  (container origin)
+  //   => frame relative to image = 0 - ((cw-w)/2 + _cropX) = (w-cw)/2 - _cropX
+  const sx=((w-cw)/2 - _cropX)/_cropScale;
+  const sy=((h-cw)/2 - _cropY)/_cropScale;
+  const sw=cw/_cropScale;
+  const sh=cw/_cropScale;
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, OUT, OUT);
   const result=canvas.toDataURL('image/jpeg',0.82);
   closeCropModal();
   // Apply result to the right target
@@ -4218,8 +4108,8 @@ function renderSecretItems(){
       oncontextmenu="e=>e.preventDefault()">
       <button class="secret-log-btn" onclick="openSecretLog(${item.id});event.stopPropagation()">📋</button>
       <div class="secret-emo">${icon}</div>
-      <div style="font-size:13px;font-weight:800;margin-bottom:3px;line-height:1.3;">${item.name}</div>
-      ${item.desc?`<div style="font-size:11px;color:var(--sub);margin-bottom:5px;line-height:1.4;">${item.desc}</div>`:''}
+      <div style="font-size:13px;font-weight:800;margin-bottom:3px;line-height:1.3;">${escAttr(item.name)}</div>
+      ${item.desc?`<div style="font-size:11px;color:var(--sub);margin-bottom:5px;line-height:1.4;">${escAttr(item.desc)}</div>`:''}
       <div style="font-size:11px;color:var(--sub);margin-bottom:6px;">库存：${rem} · ⚡${item.cost}</div>
       <button class="secret-redeem" onclick="startSecretRedeem(${item.id});event.stopPropagation()" ${soldOut||!canAfford?'disabled':''}>
         ${soldOut?'已售罄':!canAfford?`⚡不足(${S.pts}/${item.cost})`:`兑换 ⚡${item.cost}`}
@@ -4276,7 +4166,7 @@ function confirmSecretRedeem(){
   save();updateMyStats();renderSecretItems();
   closeModal('modal-secret-redeem');
   showToast(`✅ 兑换成功！${item.name} 到手啦`);
-  launchFW();
+  
 }
 
 function openSecretLog(itemId){
