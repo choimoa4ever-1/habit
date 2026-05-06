@@ -5019,15 +5019,6 @@ async function initFCM(uid) {
       console.log('FCM Token 已保存:', token);
     }
 
-    // 订阅 all_users topic，方便控制台群发
-    await fetch('https://iid.googleapis.com/iid/v1/' + token + '/rel/topics/all_users', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'key=931923917300',
-        'Content-Type': 'application/json'
-      }
-    });
-    console.log('已订阅 all_users topic');
 
     // 前台收到通知时显示网页内横幅
     messaging.onMessage((payload) => {
