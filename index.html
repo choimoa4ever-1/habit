@@ -4954,20 +4954,51 @@ function _restorePoopTimer() {
 /* ================================================ FCM PUSH */
 async function initFCM(uid) {
   try {
-    const messaging = firebase.messaging();
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') return;
+    // 检查浏览器支持
+    if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+      console.warn('FCM: 浏览器不支持通知');
+      return;
+    }
 
-    // 替换为你的 VAPID 公钥（在 Firebase 控制台 → 云消息传递 → Web 配置里找）
-    const token = await messaging.getToken({ vapidKey: 'BBKAqylo5w2L3yfVjxEYncnxIifAqYxoOkeuCVPa9wIfWdy9iOgh72XLKZROal0N955UAt4wuPfcJrqMXQ9G5ds' });
+    // 请求通知权限
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.warn('FCM: 用户拒绝通知权限');
+      return;
+    }
+
+    // 显式注册 Service Worker（关键！）
+    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    await navigator.serviceWorker.ready;
+
+    const messaging = firebase.messaging();
+
+    // 获取 Token，传入 serviceWorkerRegistration
+    const token = await messaging.getToken({
+      vapidKey: 'BBKAqylo5w2L3yfVjxEYncnxIifAqYxoOkeuCVPa9wIfWdy9iOgh72XLKZROal0N955UAt4wuPfcJrqMXQ9G5ds',
+      serviceWorkerRegistration: swReg
+    });
+
     if (token && uid) {
-      // 把 token 存到 Firestore，方便你以后在控制台发通知
-      await db.collection('fcmTokens').doc(token).set({
-        uid: uid,
+      // 把 token 存到 Firestore
+      await db.collection('fcmTokens').doc(uid).set({
+        token: token,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-      console.log('FCM Token 已保存');
+      console.log('FCM Token 已保存:', token);
     }
+
+    // 前台收到通知时也显示（App 在前台时 FCM 默认不弹通知）
+    messaging.onMessage((payload) => {
+      const { title, body, icon } = payload.notification || {};
+      if (Notification.permission === 'granted') {
+        swReg.showNotification(title || '习惯打卡', {
+          body: body || '',
+          icon: icon || '/icon.png'
+        });
+      }
+    });
+
   } catch (e) {
     console.warn('FCM 初始化失败:', e);
   }
