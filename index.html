@@ -4968,7 +4968,7 @@ async function initFCM(uid) {
     }
 
     // 显式注册 Service Worker（关键！）
-    const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
+    const swReg = await navigator.serviceWorker.register('/habit/firebase-messaging-sw.js', { scope: '/habit/' });
     await navigator.serviceWorker.ready;
 
     const messaging = firebase.messaging();
