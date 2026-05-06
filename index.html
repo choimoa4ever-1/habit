@@ -382,6 +382,27 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
   white-space:normal;max-width:min(300px,80vw);text-align:center;word-break:break-word;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
+/* ===== IN-APP NOTIFICATION ===== */
+.in-app-notif{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-120px);
+  width:calc(100% - 32px);max-width:398px;
+  background:var(--card);border:2px solid var(--bdr);border-radius:20px;
+  padding:14px 16px;display:flex;align-items:flex-start;gap:12px;
+  box-shadow:4px 4px 0 var(--bdr);z-index:9999;
+  transition:transform .45s cubic-bezier(.34,1.28,.64,1),opacity .3s;
+  opacity:0;pointer-events:none;}
+.in-app-notif.show{transform:translateX(-50%) translateY(0);opacity:1;pointer-events:auto;}
+.in-app-notif-icon{font-size:26px;flex-shrink:0;margin-top:1px;}
+.in-app-notif-body{flex:1;min-width:0;}
+.in-app-notif-title{font-size:14px;font-weight:900;margin-bottom:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.in-app-notif-text{font-size:13px;color:var(--sub);line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.in-app-notif-close{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--bdr);
+  background:var(--ol);display:flex;align-items:center;justify-content:center;
+  font-size:13px;cursor:pointer;flex-shrink:0;
+  transition:transform .2s cubic-bezier(.34,1.28,.64,1);}
+.in-app-notif-close:active{transform:scale(.8) rotate(90deg);}
+
 /* ===== SPIN ITEM ROW ===== */
 .spin-item-row{display:flex;align-items:center;gap:8px;padding:8px 12px;
   background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;
@@ -1633,6 +1654,14 @@ input[type=text],textarea{word-wrap:break-word;white-space:pre-wrap;}
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="in-app-notif" id="in-app-notif">
+  <div class="in-app-notif-icon">🔔</div>
+  <div class="in-app-notif-body">
+    <div class="in-app-notif-title" id="in-app-notif-title"></div>
+    <div class="in-app-notif-text" id="in-app-notif-text"></div>
+  </div>
+  <div class="in-app-notif-close" onclick="hideInAppNotification()">×</div>
+</div>
 
 <script>
 
@@ -4988,15 +5017,10 @@ async function initFCM(uid) {
       console.log('FCM Token 已保存:', token);
     }
 
-    // 前台收到通知时也显示（App 在前台时 FCM 默认不弹通知）
+    // 前台收到通知时显示网页内横幅
     messaging.onMessage((payload) => {
-      const { title, body, icon } = payload.notification || {};
-      if (Notification.permission === 'granted') {
-        swReg.showNotification(title || '习惯打卡', {
-          body: body || '',
-          icon: icon || '/icon.png'
-        });
-      }
+      const { title, body } = payload.notification || {};
+      showInAppNotification(title, body);
     });
 
   } catch (e) {
@@ -5004,6 +5028,23 @@ async function initFCM(uid) {
   }
 }
 /* ================================================ BOOTUI */
+let _inAppTimer = null;
+function showInAppNotification(title, body) {
+  const el = document.getElementById('in-app-notif');
+  const titleEl = document.getElementById('in-app-notif-title');
+  const textEl = document.getElementById('in-app-notif-text');
+  if (!el) return;
+  titleEl.textContent = title || '习惯打卡';
+  textEl.textContent = body || '';
+  el.classList.add('show');
+  clearTimeout(_inAppTimer);
+  _inAppTimer = setTimeout(() => hideInAppNotification(), 5000);
+}
+function hideInAppNotification() {
+  const el = document.getElementById('in-app-notif');
+  if (el) el.classList.remove('show');
+}
+
 function bootUI(){
   applyAllSettings();
   renderHabits();
