@@ -5193,58 +5193,6 @@ function stopHearts(){
   </div>
 </div>
 
-<script>
-(function(){
-  let tapCount=0,tapTimer=null;
-  const el=document.getElementById('about-logo-tap');
-  if(!el)return;
-  el.addEventListener('click',function(){
-    tapCount++;
-    if(tapTimer)clearTimeout(tapTimer);
-    tapTimer=setTimeout(()=>{tapCount=0;},1500);
-    if(tapCount>=5){tapCount=0;clearTimeout(tapTimer);openEasterEgg();}
-  });
-})();
-function openEasterEgg(){
-  const overlay=document.getElementById('easter-egg-overlay');
-  const dateEl=document.getElementById('easter-egg-date');
-  const now=new Date();
-  dateEl.textContent=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
-  overlay.style.display='flex';
-  startHearts();
-}
-function closeEasterEgg(){
-  document.getElementById('easter-egg-overlay').style.display='none';
-  stopHearts();
-}
-let _heartAnim=null;
-function startHearts(){
-  const canvas=document.getElementById('heart-canvas');
-  const ctx=canvas.getContext('2d');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  const hearts=Array.from({length:18},()=>({x:Math.random()*canvas.width,y:canvas.height+Math.random()*100,size:14+Math.random()*22,speed:1.2+Math.random()*1.8,opacity:0.5+Math.random()*0.5,sway:(Math.random()-.5)*1.2,angle:Math.random()*Math.PI*2}));
-  function drawHeart(ctx,x,y,size,opacity){
-    ctx.save();ctx.globalAlpha=opacity;
-    ctx.fillStyle=`hsl(${340+Math.random()*30},90%,65%)`;
-    ctx.beginPath();ctx.moveTo(x,y);
-    ctx.bezierCurveTo(x,y-size*.3,x-size*.5,y-size*.8,x-size*.5,y-size*.5);
-    ctx.bezierCurveTo(x-size*.5,y-size*1.1,x,y-size*.9,x,y-size*.6);
-    ctx.bezierCurveTo(x,y-size*.9,x+size*.5,y-size*1.1,x+size*.5,y-size*.5);
-    ctx.bezierCurveTo(x+size*.5,y-size*.8,x,y-size*.3,x,y);
-    ctx.fill();ctx.restore();
-  }
-  function loop(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    hearts.forEach(h=>{h.y-=h.speed;h.angle+=.02;h.x+=Math.sin(h.angle)*h.sway;if(h.y<-40){h.y=canvas.height+20;h.x=Math.random()*canvas.width;}drawHeart(ctx,h.x,h.y,h.size,h.opacity);});
-    _heartAnim=requestAnimationFrame(loop);
-  }
-  loop();
-}
-function stopHearts(){
-  if(_heartAnim){cancelAnimationFrame(_heartAnim);_heartAnim=null;}
-  const canvas=document.getElementById('heart-canvas');
-  if(canvas)canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
-}
-</script>
+
 </body>
 </html>
