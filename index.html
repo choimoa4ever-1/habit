@@ -2161,6 +2161,8 @@ function doSignOut() {
     setCloudStatus('hidden');
     const delBtn = document.getElementById('btn-delete-account');
     if (delBtn) { delBtn.disabled = true; delBtn.style.opacity = '.5'; }
+    S = {};
+    localStorage.removeItem('hbt7');
     auth.signOut();
   });
 }
