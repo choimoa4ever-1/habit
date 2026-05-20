@@ -3780,11 +3780,27 @@ function renderMsg(){const el=document.getElementById('msg-body');if(!el)return;
 
 function saveSettings(){const n=document.getElementById('set-nick').value.trim();if(n){S.nick=n;document.getElementById('my-nick').textContent=n;}save();showToast('设置已保存');}
 function clearAllData(){
+  const hasCloud = !!_currentUid;
   showCustomConfirm(
     '清空所有数据',
-    '此操作将清空本地所有习惯、心愿和记录数据，云端数据在下次同步前不受影响。',
+    hasCloud
+      ? '此操作将同时清空本地和云端的所有数据，无法撤销，确认继续？'
+      : '此操作将清空本地所有数据，无法撤销，确认继续？',
     '确认清空','#E05050'
-  ).then(ok=>{if(!ok)return;localStorage.removeItem('hbt7');location.reload();});
+  ).then(async ok=>{
+    if(!ok) return;
+    localStorage.removeItem('hbt7');
+    if(hasCloud){
+      try{
+        await cloudDocRef(_currentUid).delete();
+      }catch(e){
+        console.warn('[Cloud] 清空云端失败',e);
+        showToast('⚠️ 云端清空失败，请检查网络后重试');
+        return;
+      }
+    }
+    location.reload();
+  });
 }
 
 
