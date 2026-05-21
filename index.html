@@ -603,44 +603,95 @@ button{cursor:pointer;background:none;font-family:inherit;}
 .login-cta-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--bdr);}
 
 /* ===== HEALTH PAGE ===== */
-.health-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  flex:1;gap:18px;padding:40px 24px;text-align:center;}
-.health-empty-icon{font-size:72px;animation:floatBob 3s ease-in-out infinite;}
 @keyframes floatBob{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
-.health-empty-text{font-size:15px;color:var(--sub);line-height:1.7;max-width:240px;}
-.btn-poop{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+@keyframes pulseRing{0%,100%{transform:scale(1);opacity:.6;}50%{transform:scale(1.06);opacity:1;}}
+@keyframes spinArc{from{stroke-dashoffset:0;}to{stroke-dashoffset:-502;}}
+
+.health-scroll-inner{display:flex;flex-direction:column;align-items:center;padding:16px 16px 32px;gap:16px;min-height:100%;}
+
+/* Big status ring */
+.health-ring-wrap{position:relative;width:220px;height:220px;flex-shrink:0;}
+.health-ring-wrap svg{position:absolute;inset:0;width:100%;height:100%;}
+.health-ring-bg{fill:none;stroke:var(--bdr);stroke-width:10;opacity:.08;}
+.health-ring-arc{fill:none;stroke-width:10;stroke-linecap:round;
+  stroke-dasharray:502;stroke-dashoffset:502;
+  transition:stroke-dashoffset 1s var(--ease-silk),stroke .6s;}
+.health-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;text-align:center;padding:24px;}
+.health-ring-icon{font-size:56px;animation:floatBob 3s ease-in-out infinite;line-height:1;}
+.health-ring-empty-text{font-size:13px;color:var(--sub);font-weight:600;margin-top:4px;line-height:1.5;}
+.health-ring-days{font-size:13px;font-weight:800;color:var(--sub);letter-spacing:.5px;}
+.health-ring-time{font-size:38px;font-weight:900;color:var(--text);line-height:1;letter-spacing:-1px;}
+.health-ring-unit{font-size:12px;color:var(--sub);font-weight:700;}
+.health-ring-label{font-size:12px;color:var(--sub);font-weight:700;margin-top:2px;}
+
+/* Status colors */
+.health-ring-arc.status-good{stroke:#34C759;}
+.health-ring-arc.status-warn{stroke:#FF9500;}
+.health-ring-arc.status-bad{stroke:#FF3B30;}
+
+/* Start button */
+.health-start-btn{width:100%;max-width:340px;display:flex;align-items:center;justify-content:center;gap:10px;
   background:var(--y);border:2.5px solid var(--bdr);border-radius:28px;
-  font-size:18px;font-weight:900;padding:16px 36px;cursor:pointer;
-  box-shadow:4px 4px 0 var(--bdr);min-height:56px;
+  font-size:19px;font-weight:900;padding:18px 36px;cursor:pointer;
+  box-shadow:4px 4px 0 var(--bdr);min-height:60px;
   transition:transform .2s var(--ease-spring),box-shadow .2s;}
-.btn-poop:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--bdr);}
-.health-since{display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:6px;padding:28px 24px 22px;text-align:center;}
-.health-since-label{font-size:13px;color:var(--sub);font-weight:700;}
-.health-since-val{font-size:28px;font-weight:900;color:var(--text);}
-.health-since-sub{font-size:12px;color:var(--sub);}
-.health-since-start-btn{margin-top:8px;}
-.poop-log-list{padding:0 16px;}
-.poop-log-card{background:var(--card);border:1.5px solid var(--bdr);border-radius:18px;
-  padding:13px 14px;margin-bottom:10px;box-shadow:2px 2px 0 var(--bdr);
-  display:flex;align-items:center;gap:12px;
-  transition:transform .18s var(--ease-spring);}
+.health-start-btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--bdr);}
+
+/* Week stats bar */
+.health-week-bar{width:100%;max-width:340px;background:var(--card);
+  border:1.5px solid var(--bdr);border-radius:16px;padding:14px 16px;
+  box-shadow:2px 2px 0 var(--bdr);display:flex;align-items:center;gap:14px;}
+.health-week-icon{font-size:22px;flex-shrink:0;}
+.health-week-info{flex:1;min-width:0;}
+.health-week-main{font-size:14px;font-weight:900;color:var(--text);}
+.health-week-sub{font-size:11px;color:var(--sub);font-weight:600;margin-top:2px;}
+
+/* Recent records collapsible */
+.health-records-section{width:100%;max-width:340px;}
+.health-records-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;
+  background:none;border:none;padding:6px 2px;cursor:pointer;margin-bottom:6px;}
+.health-records-toggle-label{font-size:13px;font-weight:800;color:var(--sub);}
+.health-records-chevron{font-size:12px;color:var(--sub);transition:transform .22s var(--ease-spring);}
+.health-records-chevron.open{transform:rotate(180deg);}
+.health-records-list{display:none;}
+.health-records-list.open{display:block;}
+
+.poop-log-list{padding:0;}
+.poop-log-card{background:var(--card);border:1.5px solid var(--bdr);border-radius:16px;
+  padding:12px 14px;margin-bottom:8px;box-shadow:2px 2px 0 var(--bdr);
+  display:flex;flex-direction:column;
+  transition:transform .18s var(--ease-spring);cursor:pointer;}
 .poop-log-card:active{transform:translate(1px,1px);}
-.poop-log-del{flex-shrink:0;width:32px;height:32px;border-radius:50%;border:1.5px solid #E05050;
-  background:transparent;color:#E05050;font-size:16px;cursor:pointer;
+.poop-log-card-row{display:flex;align-items:center;gap:10px;width:100%;}
+.poop-log-del{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:1.5px solid #E05050;
+  background:transparent;color:#E05050;font-size:15px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:background .18s,transform .18s var(--ease-spring);}
 .poop-log-del:active{background:#fce4e4;transform:scale(.88);}
-.poop-log-icon{font-size:28px;flex-shrink:0;}
+.poop-log-icon{font-size:24px;flex-shrink:0;}
 .poop-log-info{flex:1;min-width:0;}
 .poop-log-time{font-size:12px;color:var(--sub);}
-.poop-log-row{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;}
+.poop-log-row{display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap;}
 .poop-tag{display:inline-flex;align-items:center;font-size:11px;font-weight:700;
   padding:2px 8px;border-radius:20px;border:1.5px solid var(--bdr);}
 .tag-green{background:#d4f5dc;color:#2a7a42;}
 .tag-yellow{background:#fff6cc;color:#8a6c00;}
 .tag-red{background:#fce4e4;color:#c0392b;}
 .poop-log-dur{font-size:11px;color:var(--sub);font-weight:600;}
+.poop-log-card{cursor:pointer;}
+.poop-log-expand{display:none;margin-top:10px;padding-top:10px;border-top:1.5px solid var(--bdr);}
+.poop-log-expand.open{display:block;}
+.poop-log-expand-note{font-size:13px;color:var(--text);line-height:1.6;margin-bottom:8px;white-space:pre-wrap;}
+.poop-log-expand-note-empty{font-size:12px;color:var(--sub);font-style:italic;margin-bottom:8px;}
+.poop-log-expand-actions{display:flex;gap:8px;justify-content:flex-end;}
+.btn-log-edit{font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;
+  border:1.5px solid var(--bdr);background:var(--y);color:var(--text);cursor:pointer;
+  transition:transform .15s var(--ease-spring);}
+.btn-log-edit:active{transform:scale(.93);}
+.poop-log-chevron{font-size:11px;color:var(--sub);margin-left:4px;transition:transform .2s;display:inline-block;}
+.poop-log-chevron.open{transform:rotate(180deg);}
+.health-since-start-btn{margin-top:8px;}
 
 /* ===== TIMER PAGE (immersive) ===== */
 #page-timer{
@@ -699,6 +750,49 @@ button{cursor:pointer;background:none;font-family:inherit;}
 #health-timer-banner.visible{display:flex;}
 #health-timer-banner:active{transform:scale(.97);}
 
+/* ===== POOP CALENDAR ===== */
+.poop-cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.poop-cal-month{font-size:16px;font-weight:900;}
+.poop-cal-nav-btn{width:34px;height:34px;border-radius:10px;border:1.5px solid var(--bdr);
+  background:var(--card);font-size:16px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform .2s var(--ease-spring);}
+.poop-cal-nav-btn:active{transform:scale(.85);}
+.poop-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:14px;}
+.poop-cal-dow{text-align:center;font-size:10px;font-weight:700;color:var(--sub);padding:4px 0 6px;}
+.poop-cal-cell{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;cursor:pointer;position:relative;
+  transition:background .15s,transform .2s var(--ease-spring);padding:2px 0;}
+.poop-cal-cell:active{transform:scale(.88);}
+.poop-cal-cell.today{border:2px solid var(--o);}
+.poop-cal-cell.has-log{background:var(--ol);}
+.poop-cal-cell.selected{background:var(--y);box-shadow:2px 2px 0 var(--bdr);}
+.poop-cal-cell.empty-day{opacity:0;pointer-events:none;}
+.poop-cal-day-num{font-size:11px;font-weight:700;line-height:1;}
+.poop-cal-emoji{font-size:9px;line-height:1;margin-top:1px;letter-spacing:-1px;}
+.poop-cal-summary{background:var(--card);border:2px solid var(--bdr);border-radius:16px;
+  padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;
+  box-shadow:3px 3px 0 var(--bdr);}
+.poop-cal-detail-section{background:var(--card);border:2px solid var(--bdr);border-radius:18px;
+  padding:14px;box-shadow:3px 3px 0 var(--bdr);}
+.poop-cal-detail-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.poop-cal-detail-date{font-size:14px;font-weight:900;}
+.poop-cal-log-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;
+  border-bottom:1px solid #eee;}
+.poop-cal-log-item:last-child{border-bottom:none;padding-bottom:0;}
+.poop-cal-log-icon{font-size:22px;flex-shrink:0;margin-top:2px;}
+.poop-cal-log-info{flex:1;min-width:0;}
+.poop-cal-log-time{font-size:12px;font-weight:800;margin-bottom:4px;}
+.poop-cal-log-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:3px;}
+.poop-cal-log-extra{font-size:11px;color:var(--sub);}
+.poop-cal-log-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.poop-cal-edit-btn{width:32px;height:32px;border-radius:10px;background:var(--ol);
+  border:1.5px solid var(--bdr);font-size:14px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;transition:transform .2s var(--ease-spring);}
+.poop-cal-edit-btn:active{transform:scale(.85);}
+.poop-cal-del-btn{width:32px;height:32px;border-radius:10px;background:#fee;
+  border:1.5px solid #f5a5a5;font-size:14px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;transition:transform .2s var(--ease-spring);}
+.poop-cal-del-btn:active{transform:scale(.85);}
 /* ===== BRISTOL PICKER ===== */
 .bristol-scroller{display:flex;gap:10px;overflow-x:auto;padding:4px 0 8px;
   -webkit-overflow-scrolling:touch;scrollbar-width:none;}
@@ -996,9 +1090,20 @@ button{cursor:pointer;background:none;font-family:inherit;}
 <div class="page" id="page-health">
   <div class="hdr">
     <div class="hdr-title">💩 健康</div>
+    <div class="icon-btn" onclick="navigateTo('page-poop-cal')" title="便便日历">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <rect x="3" y="5" width="20" height="18" rx="3" fill="#FDE8C8" stroke="#2C2C2C" stroke-width="2"/>
+        <line x1="3" y1="10" x2="23" y2="10" stroke="#2C2C2C" stroke-width="1.5"/>
+        <line x1="8" y1="3" x2="8" y2="7" stroke="#2C2C2C" stroke-width="2" stroke-linecap="round"/>
+        <line x1="18" y1="3" x2="18" y2="7" stroke="#2C2C2C" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="9" cy="16" r="1.5" fill="#2C2C2C"/>
+        <circle cx="13" cy="16" r="1.5" fill="#2C2C2C"/>
+        <circle cx="17" cy="16" r="1.5" fill="#2C2C2C"/>
+      </svg>
+    </div>
   </div>
   <div class="scroll" id="health-scroll" style="display:flex;flex-direction:column;">
-    <!-- Timer-in-progress banner (shown when timing but on health page) -->
+    <!-- Timer-in-progress banner -->
     <div id="health-timer-banner" onclick="returnToTimer()">
       <div style="font-size:26px;animation:floatBob 2.5s ease-in-out infinite;">💩</div>
       <div style="flex:1;">
@@ -1007,20 +1112,40 @@ button{cursor:pointer;background:none;font-family:inherit;}
       </div>
       <div style="font-size:13px;color:var(--y);font-weight:700;">点击继续 ›</div>
     </div>
-    <!-- State 1: empty -->
-    <div class="health-empty" id="health-empty">
-      <div class="health-empty-icon">💩</div>
-      <div class="health-empty-text">记录每一次，了解你的肠道健康</div>
-      <button class="btn-poop" onclick="startPoop()">开始便便 💩</button>
-    </div>
-    <!-- State 2: has records -->
-    <div id="health-has-records" style="display:none;">
-      <div class="health-since" id="health-since-card">
-        <div class="health-since-label">距离上次便便</div>
-        <div class="health-since-val" id="health-since-val">—</div>
-        <button class="btn-poop health-since-start-btn" onclick="startPoop()" style="margin-top:14px;">开始便便 💩</button>
+
+    <div class="health-scroll-inner">
+      <!-- Status ring (unified: empty vs has-records handled by JS) -->
+      <div class="health-ring-wrap">
+        <svg viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+          <circle class="health-ring-bg" cx="110" cy="110" r="90" transform="rotate(-90 110 110)"/>
+          <circle class="health-ring-arc" id="health-ring-arc" cx="110" cy="110" r="80" transform="rotate(-90 110 110)"/>
+        </svg>
+        <div class="health-ring-center" id="health-ring-center">
+        </div>
       </div>
-      <div class="poop-log-list" id="poop-log-list"></div>
+
+      <!-- Start button (always visible) -->
+      <button class="health-start-btn" onclick="startPoop()">开始便便 💩</button>
+
+      <!-- Week stats (hidden until records exist) -->
+      <div class="health-week-bar" id="health-week-bar" style="display:none;">
+        <div class="health-week-icon">📊</div>
+        <div class="health-week-info">
+          <div class="health-week-main" id="health-week-main">—</div>
+          <div class="health-week-sub" id="health-week-sub">本周统计</div>
+        </div>
+      </div>
+
+      <!-- Recent records collapsible (hidden until records exist) -->
+      <div class="health-records-section" id="health-records-section" style="display:none;">
+        <button class="health-records-toggle" onclick="_toggleHealthRecords()">
+          <span class="health-records-toggle-label">最近记录</span>
+          <span class="health-records-chevron" id="health-records-chevron">▾</span>
+        </button>
+        <div class="health-records-list" id="health-records-list">
+          <div class="poop-log-list" id="poop-log-list"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1047,12 +1172,18 @@ button{cursor:pointer;background:none;font-family:inherit;}
 <div class="overlay" id="modal-poop-log">
   <div class="modal">
     <div class="modal-hdr">
-      <div class="modal-title">📝 记录便便</div>
+      <div class="modal-title" id="poop-modal-title">📝 记录便便</div>
       <div class="modal-close" onclick="closPoopModal()">✕</div>
     </div>
-    <div class="field">
+    <input type="hidden" id="poop-edit-id" value="">
+    <input type="hidden" id="poop-modal-source" value="timer">
+    <div class="field" id="poop-dur-auto-row">
       <label>⏱️ 时长</label>
       <input type="text" id="poop-form-dur" readonly style="background:#f5f5f5;color:var(--sub);">
+    </div>
+    <div class="field" id="poop-dur-manual-row" style="display:none;">
+      <label>⏱️ 时长（分钟，选填）</label>
+      <input type="number" id="poop-form-dur-min" min="0" max="999" placeholder="留空则不记录时长" style="width:100%;">
     </div>
     <div class="field">
       <label>🕐 时间（可补录）</label>
@@ -1532,6 +1663,16 @@ button{cursor:pointer;background:none;font-family:inherit;}
 </div>
 
 
+<!-- PAGE: 便便日历 -->
+<div class="page sub-page" id="page-poop-cal">
+  <div class="hdr">
+    <div class="icon-btn" onclick="goBack()"><span style="font-size:22px;font-weight:700;">‹</span></div>
+    <div class="hdr-title">💩 便便日历</div>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="scroll" style="padding:0 16px 16px;" id="poop-cal-body"></div>
+</div>
+
 <!-- PAGE: 帮助中心 -->
 <div class="page sub-page" id="page-help">
   <div class="hdr">
@@ -1773,6 +1914,8 @@ function _pageInitCallbacks(pageName, params) {
 
     case 'page-ledger':
       _ledgerYear=null;_ledgerMonth=null;_ledgerSelDate=null;_ledgerTab='earn';renderLedger(); break;
+    case 'page-poop-cal':
+      _poopCalYear=null;_poopCalMonth=null;_poopCalSelDate=null;renderPoopCal(); break;
     case 'page-help':
       renderHelp(); break;
     case 'page-msg':
@@ -2161,8 +2304,6 @@ function doSignOut() {
     setCloudStatus('hidden');
     const delBtn = document.getElementById('btn-delete-account');
     if (delBtn) { delBtn.disabled = true; delBtn.style.opacity = '.5'; }
-    S = {};
-    localStorage.removeItem('hbt7');
     auth.signOut();
   });
 }
@@ -4836,6 +4977,7 @@ function openPoopLogModal() {
   const endTs = Date.now();
   const dur = Math.max(0, Math.floor((endTs - (_poopStartTs || endTs)) / 1000));
   document.getElementById('poop-form-dur').value = _fmtDuration(dur) + '（时间可在下方调整）';
+  document.getElementById('poop-form-dur').readOnly = true;
   const now = new Date(endTs);
   const localIso = new Date(now.getTime() - now.getTimezoneOffset()*60000).toISOString().slice(0,16);
   document.getElementById('poop-form-time').value = localIso;
@@ -4843,6 +4985,11 @@ function openPoopLogModal() {
   _poopSelectedColor = 'brown';
   _poopSelectedFeelings = [];
   document.getElementById('poop-form-note').value = '';
+  document.getElementById('poop-edit-id').value = '';
+  document.getElementById('poop-modal-source').value = 'timer';
+  document.getElementById('poop-modal-title').textContent = '📝 记录便便';
+  document.getElementById('poop-dur-auto-row').style.display = '';
+  document.getElementById('poop-dur-manual-row').style.display = 'none';
   _buildBristolPicker();
   _buildPoopColorPicker();
   _buildFeelingPicker();
@@ -4852,10 +4999,23 @@ function openPoopLogModal() {
 }
 
 function closPoopModal() {
+  const source = document.getElementById('poop-modal-source').value || 'timer';
   closeModal('modal-poop-log');
-  _poopStartTs = null;
-  localStorage.removeItem('poop_startTs');
-  switchPage('health');
+  document.getElementById('poop-edit-id').value = '';
+  document.getElementById('poop-modal-source').value = 'timer';
+  document.getElementById('poop-modal-title').textContent = '📝 记录便便';
+  // Restore duration row visibility
+  document.getElementById('poop-dur-auto-row').style.display = '';
+  document.getElementById('poop-dur-manual-row').style.display = 'none';
+  if (source === 'timer') {
+    // Normal timer flow — reset and go to health
+    _poopStartTs = null;
+    localStorage.removeItem('poop_startTs');
+    switchPage('health');
+  } else {
+    // cal_add or cal_edit — just stay on calendar
+    _renderPoopCalBody();
+  }
 }
 
 function _buildBristolPicker() {
@@ -4918,10 +5078,78 @@ function toggleFeeling(key, el) {
 function savePoopLog() {
   const timeVal = document.getElementById('poop-form-time').value;
   const userEndTs = timeVal ? new Date(timeVal).getTime() : Date.now();
-  // Recalculate duration from actual startTs to user-chosen end time
+  const editId = document.getElementById('poop-edit-id').value;
+  const source = document.getElementById('poop-modal-source').value || 'timer';
+  const note = document.getElementById('poop-form-note').value.trim();
+
+  // Read manual duration (used in cal_edit and cal_add)
+  const manualMinStr = document.getElementById('poop-form-dur-min').value;
+  const manualDur = manualMinStr !== '' ? Math.max(0, Math.round(parseFloat(manualMinStr) * 60)) : null;
+
+  if (!S.poopLogs) S.poopLogs = [];
+
+  if (editId) {
+    // ── EDIT MODE (cal_edit) ──
+    const idx = S.poopLogs.findIndex(l => l.id === parseInt(editId));
+    if (idx > -1) {
+      const old = S.poopLogs[idx];
+      // Use manual duration if provided, otherwise keep original
+      const dur = manualDur !== null ? manualDur : (old.duration || 0);
+      const newStartTs = userEndTs - dur * 1000;
+      S.poopLogs[idx] = {
+        ...old,
+        startTs: newStartTs,
+        endTs: userEndTs,
+        duration: dur,
+        bristol: _poopSelectedBristol,
+        color: _poopSelectedColor,
+        feeling: [..._poopSelectedFeelings],
+        note: note
+      };
+    }
+    S.poopLogs.sort((a, b) => b.endTs - a.endTs);
+    save();
+    document.getElementById('poop-edit-id').value = '';
+    document.getElementById('poop-modal-source').value = 'timer';
+    document.getElementById('poop-modal-title').textContent = '📝 记录便便';
+    document.getElementById('poop-dur-auto-row').style.display = '';
+    document.getElementById('poop-dur-manual-row').style.display = 'none';
+    closeModal('modal-poop-log');
+    _renderPoopCalBody();
+    showToast('记录已更新 ✓');
+    return;
+  }
+
+  if (source === 'cal_add') {
+    // ── SUPPLEMENT / 补录 MODE ──
+    const dur = manualDur !== null ? manualDur : 0;
+    const startTs = userEndTs - dur * 1000;
+    const log = {
+      id: Date.now(),
+      startTs: startTs,
+      endTs: userEndTs,
+      duration: dur,
+      bristol: _poopSelectedBristol,
+      color: _poopSelectedColor,
+      feeling: [..._poopSelectedFeelings],
+      note: note
+    };
+    S.poopLogs.unshift(log);
+    S.poopLogs.sort((a, b) => b.endTs - a.endTs);
+    save();
+    document.getElementById('poop-modal-source').value = 'timer';
+    document.getElementById('poop-modal-title').textContent = '📝 记录便便';
+    document.getElementById('poop-dur-auto-row').style.display = '';
+    document.getElementById('poop-dur-manual-row').style.display = 'none';
+    closeModal('modal-poop-log');
+    _renderPoopCalBody();
+    showToast('已补录 ✓');
+    return;
+  }
+
+  // ── TIMER (normal) MODE ──
   const actualStart = _poopStartTs || (userEndTs - 60000);
   const dur = Math.max(0, Math.floor((userEndTs - actualStart) / 1000));
-  const note = document.getElementById('poop-form-note').value.trim();
 
   const log = {
     id: Date.now(),
@@ -4934,8 +5162,8 @@ function savePoopLog() {
     note: note
   };
 
-  if (!S.poopLogs) S.poopLogs = [];
   S.poopLogs.unshift(log);
+  S.poopLogs.sort((a, b) => b.endTs - a.endTs);
   save();
 
   _poopStartTs = null;
@@ -4978,26 +5206,32 @@ function _showPoopAnalysis(log) {
 /* ---- render health page ---- */
 function renderHealthPage() {
   if (!S.poopLogs) S.poopLogs = [];
-  const logs = S.poopLogs;
-  const empty = document.getElementById('health-empty');
-  const hasRec = document.getElementById('health-has-records');
+  const logs = S.poopLogs; // already sorted by endTs desc after any save
 
   _updateHealthTimerUI();
 
+  const weekBar   = document.getElementById('health-week-bar');
+  const recSec    = document.getElementById('health-records-section');
+
   if (!logs.length) {
-    empty.style.display = 'flex';
-    hasRec.style.display = 'none';
+    _renderRingEmpty();
+    if (weekBar) weekBar.style.display = 'none';
+    if (recSec)  recSec.style.display  = 'none';
   } else {
-    empty.style.display = 'none';
-    hasRec.style.display = 'block';
-    _renderHealthSince(logs[0]);
-    _renderPoopLogList(logs);
+    const sortedLogs = [...logs].sort((a, b) => b.endTs - a.endTs);
+    _renderRingWithTime(sortedLogs[0]);
+    _renderWeekStats(sortedLogs);
+    _renderPoopLogList(sortedLogs);
+    if (weekBar) weekBar.style.display = '';
+    if (recSec)  recSec.style.display  = '';
   }
+
   if (_sinceTick) { clearInterval(_sinceTick); _sinceTick = null; }
   if (logs.length) {
+    const sortedForTick = [...logs].sort((a, b) => b.endTs - a.endTs);
     _sinceTick = setInterval(() => {
       if (document.getElementById('page-health').classList.contains('active')) {
-        _renderHealthSince(logs[0]);
+        _renderRingWithTime(sortedForTick[0]);
       }
     }, 30000);
   }
@@ -5005,47 +5239,379 @@ function renderHealthPage() {
 
 let _sinceTick = null;
 
-function _renderHealthSince(lastLog) {
-  const el = document.getElementById('health-since-val');
-  if (!el) return;
-  const diff = Date.now() - lastLog.endTs;
-  const totalMin = Math.floor(diff / 60000);
-  const days = Math.floor(totalMin / 1440);
-  const hours = Math.floor((totalMin % 1440) / 60);
-  const mins = totalMin % 60;
-  let parts = [];
-  if (days > 0) parts.push(`${days}天`);
-  if (hours > 0) parts.push(`${hours}小时`);
-  parts.push(`${mins}分`);
-  el.textContent = parts.join('');
+function _renderRingEmpty() {
+  const center = document.getElementById('health-ring-center');
+  const arc    = document.getElementById('health-ring-arc');
+  if (center) center.innerHTML = `
+    <div class="health-ring-icon">💩</div>
+    <div class="health-ring-empty-text">记录每一次<br>了解你的肠道健康</div>`;
+  if (arc) { arc.style.strokeDashoffset = '502'; arc.className = 'health-ring-arc'; }
 }
+
+function _renderRingWithTime(lastLog) {
+  const center = document.getElementById('health-ring-center');
+  const arc    = document.getElementById('health-ring-arc');
+  if (!center || !arc) return;
+
+  const diff     = Date.now() - lastLog.endTs;
+  const totalMin = Math.floor(diff / 60000);
+  const days     = Math.floor(totalMin / 1440);
+  const hours    = Math.floor((totalMin % 1440) / 60);
+  const mins     = totalMin % 60;
+
+  // Arc fill: 0–24h maps to 0–100% of circle; clamp at 100%
+  const CIRC = 502;
+  const pct  = Math.min(totalMin / 1440, 1); // 1 day = full circle
+  const offset = CIRC - pct * CIRC;
+  arc.style.strokeDashoffset = offset;
+
+  // Color by urgency
+  let statusCls = 'status-good';
+  if (totalMin > 2880) statusCls = 'status-bad';       // >2 days
+  else if (totalMin > 1440) statusCls = 'status-warn'; // >1 day
+  arc.className = 'health-ring-arc ' + statusCls;
+
+  // Time display
+  let bigNum = '', bigUnit = '', subLine = '';
+  if (days > 0) {
+    bigNum  = days;
+    bigUnit = '天';
+    subLine = `${hours}小时 ${mins}分钟前`;
+  } else if (hours > 0) {
+    bigNum  = hours;
+    bigUnit = '小时';
+    subLine = `${mins}分钟前`;
+  } else {
+    bigNum  = mins;
+    bigUnit = '分钟';
+    subLine = '刚刚';
+  }
+
+  center.innerHTML = `
+    <div class="health-ring-label">距离上次便便</div>
+    <div style="display:flex;align-items:baseline;gap:4px;margin:4px 0;">
+      <span class="health-ring-time">${bigNum}</span>
+      <span class="health-ring-unit">${bigUnit}</span>
+    </div>
+    <div class="health-ring-days">${subLine}</div>`;
+}
+
+function _renderWeekStats(sortedLogs) {
+  const mainEl = document.getElementById('health-week-main');
+  const subEl  = document.getElementById('health-week-sub');
+  if (!mainEl || !subEl) return;
+
+  const now      = Date.now();
+  const weekAgo  = now - 7 * 86400000;
+  const weekLogs = sortedLogs.filter(l => l.endTs >= weekAgo);
+  const count    = weekLogs.length;
+
+  if (count === 0) {
+    mainEl.textContent = '本周暂无记录';
+    subEl.textContent  = '';
+    return;
+  }
+
+  mainEl.textContent = `本周 ${count} 次`;
+  if (count >= 2) {
+    const gaps = [];
+    for (let i = 0; i < weekLogs.length - 1; i++) {
+      gaps.push(weekLogs[i].endTs - weekLogs[i+1].endTs);
+    }
+    const avgGapH = Math.round(gaps.reduce((a,b) => a+b, 0) / gaps.length / 3600000);
+    subEl.textContent = `平均间隔 ${avgGapH} 小时`;
+  } else {
+    subEl.textContent = '本周统计';
+  }
+}
+
+function _toggleHealthRecords() {
+  const list  = document.getElementById('health-records-list');
+  const chev  = document.getElementById('health-records-chevron');
+  if (!list) return;
+  const open = list.classList.toggle('open');
+  if (chev) chev.classList.toggle('open', open);
+}
+
+// Keep legacy ID reference safe
+function _renderHealthSince(lastLog) { _renderRingWithTime(lastLog); }
 
 function _renderPoopLogList(logs) {
   const el = document.getElementById('poop-log-list');
   if (!el) return;
   const feelingLabels = {easy:'😌轻松', hard:'😤费劲', pain:'😣疼痛', incomplete:'😕不尽感'};
-  el.innerHTML = logs.map(log => {
+  // Only show 3 most recent (logs already sorted by endTs desc)
+  const recentLogs = logs.slice(0, 3);
+  el.innerHTML = recentLogs.map(log => {
     const a = BRISTOL_ANALYSIS[log.bristol] || BRISTOL_ANALYSIS[4];
     const d = new Date(log.endTs);
     const timeStr = d.toLocaleString('zh-CN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
     const colorMeta = POOP_COLORS.find(c=>c.key===log.color);
+    const feelingLabels2 = {easy:'😌轻松', hard:'😤费劲', pain:'😣疼痛', incomplete:'😕不尽感'};
     const feelingsStr = (log.feeling && log.feeling.length)
-      ? log.feeling.map(f => feelingLabels[f] || f).join(' ')
+      ? log.feeling.map(f => feelingLabels2[f] || f).join(' ')
       : '';
-    return `<div class="poop-log-card">
-      <div class="poop-log-icon">💩</div>
-      <div class="poop-log-info">
-        <div class="poop-log-time">${timeStr}</div>
-        <div class="poop-log-row">
-          <span class="poop-tag ${a.cls}">${a.status}</span>
-          <span class="poop-tag" style="background:#f5f5f5;">第${log.bristol}型</span>
-          ${colorMeta?`<span class="poop-tag" style="background:${colorMeta.hex}22;color:var(--text);">${colorMeta.label}</span>`:''}
+    const noteHtml = log.note
+      ? `<div class="poop-log-expand-note">${log.note.replace(/</g,'&lt;')}</div>`
+      : `<div class="poop-log-expand-note-empty">无备注</div>`;
+    return `<div class="poop-log-card" id="plc-${log.id}" onclick="_togglePoopCard(${log.id}, event)">
+      <div class="poop-log-card-row">
+        <div class="poop-log-icon">💩</div>
+        <div class="poop-log-info">
+          <div class="poop-log-time">${timeStr} <span class="poop-log-chevron" id="plc-chev-${log.id}">▾</span></div>
+          <div class="poop-log-row">
+            <span class="poop-tag ${a.cls}">${a.status}</span>
+            <span class="poop-tag" style="background:#f5f5f5;">第${log.bristol}型</span>
+            ${colorMeta?`<span class="poop-tag" style="background:${colorMeta.hex}22;color:var(--text);">${colorMeta.label}</span>`:''}
+          </div>
+          <div class="poop-log-dur">⏱ ${_fmtDuration(log.duration)}${feelingsStr?' · '+feelingsStr:''}</div>
         </div>
-        <div class="poop-log-dur">⏱ ${_fmtDuration(log.duration)}${feelingsStr?' · '+feelingsStr:''}${log.note?' · '+log.note:''}</div>
+        <button class="poop-log-del" onclick="deletePoopLog(${log.id})" title="删除">×</button>
       </div>
-      <button class="poop-log-del" onclick="deletePoopLog(${log.id})" title="删除">×</button>
+      <div class="poop-log-expand" id="plc-exp-${log.id}">
+        ${noteHtml}
+        <div class="poop-log-expand-actions">
+          <button class="btn-log-edit" onclick="openPoopLogEdit(${log.id})">✏️ 编辑</button>
+        </div>
+      </div>
     </div>`;
   }).join('');
+}
+
+/* ================================================ POOP CALENDAR PAGE */
+let _poopCalYear = null;
+let _poopCalMonth = null;
+let _poopCalSelDate = null;
+
+function renderPoopCal() {
+  const now = new Date();
+  if (_poopCalYear === null) _poopCalYear = now.getFullYear();
+  if (_poopCalMonth === null) _poopCalMonth = now.getMonth(); // 0-based
+  _renderPoopCalBody();
+}
+
+function _renderPoopCalBody() {
+  const container = document.getElementById('poop-cal-body');
+  if (!container) return;
+  const today = todayKey();
+  const logs = S.poopLogs || [];
+
+  // Build map: dateKey -> count
+  const countByDate = {};
+  logs.forEach(l => {
+    const d = new Date(l.endTs);
+    const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    countByDate[k] = (countByDate[k] || 0) + 1;
+  });
+
+  const year = _poopCalYear;
+  const month = _poopCalMonth;
+  const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
+  // Adjust so week starts Monday
+  const startOffset = (firstDay === 0) ? 6 : firstDay - 1;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // Month total
+  const monthPrefix = `${year}-${String(month+1).padStart(2,'0')}`;
+  const monthTotal = logs.filter(l => {
+    const d = new Date(l.endTs);
+    return d.getFullYear()===year && d.getMonth()===month;
+  }).length;
+
+  // If no selected date, default to today if this month, else 1st
+  if (!_poopCalSelDate || !_poopCalSelDate.startsWith(monthPrefix)) {
+    const todayInMonth = today.startsWith(monthPrefix);
+    _poopCalSelDate = todayInMonth ? today : `${monthPrefix}-01`;
+  }
+
+  const DOW_LABELS = ['一','二','三','四','五','六','日'];
+
+  // Build calendar cells
+  let cells = '';
+  for (let i = 0; i < startOffset; i++) {
+    cells += `<div class="poop-cal-cell empty-day"></div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const count = countByDate[dateKey] || 0;
+    const isToday = dateKey === today;
+    const isSel = dateKey === _poopCalSelDate;
+    const hasLog = count > 0;
+    let cls = 'poop-cal-cell';
+    if (isSel) cls += ' selected';
+    else if (hasLog) cls += ' has-log';
+    if (isToday) cls += ' today';
+    let emojiStr = '';
+    if (count === 1) emojiStr = '💩';
+    else if (count === 2) emojiStr = '💩×2';
+    else if (count >= 3) emojiStr = `💩×${count}`;
+    cells += `<div class="${cls}" onclick="poopCalSelectDate('${dateKey}')">
+      <div class="poop-cal-day-num">${d}</div>
+      ${emojiStr ? `<div class="poop-cal-emoji">${emojiStr}</div>` : ''}
+    </div>`;
+  }
+
+  // Detail section for selected date
+  const selLogs = logs.filter(l => {
+    const d = new Date(l.endTs);
+    const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return k === _poopCalSelDate;
+  }).sort((a,b) => a.endTs - b.endTs);
+
+  const feelingLabels = {easy:'😌轻松', hard:'😤费劲', pain:'😣疼痛', incomplete:'😕不尽感'};
+  const selDateParts = _poopCalSelDate.split('-');
+  const selDateDisplay = `${parseInt(selDateParts[1])}月${parseInt(selDateParts[2])}日`;
+
+  let detailHTML = '';
+  if (!selLogs.length) {
+    detailHTML = `<div style="text-align:center;padding:24px 0;color:var(--sub);font-size:13px;">当天没有记录 💨</div>`;
+  } else {
+    detailHTML = selLogs.map(log => {
+      const a = BRISTOL_ANALYSIS[log.bristol] || BRISTOL_ANALYSIS[4];
+      const colorMeta = POOP_COLORS.find(c => c.key === log.color);
+      const d = new Date(log.endTs);
+      const timeStr = d.toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
+      const feelingsStr = (log.feeling && log.feeling.length)
+        ? log.feeling.map(f => feelingLabels[f] || f).join(' ')
+        : '';
+      return `<div class="poop-cal-log-item">
+        <div class="poop-cal-log-icon">💩</div>
+        <div class="poop-cal-log-info">
+          <div class="poop-cal-log-time">${timeStr}</div>
+          <div class="poop-cal-log-tags">
+            <span class="poop-tag ${a.cls}" style="font-size:10px;padding:2px 7px;">${a.status}</span>
+            <span class="poop-tag" style="background:#f5f5f5;font-size:10px;padding:2px 7px;">第${log.bristol}型</span>
+            ${colorMeta ? `<span class="poop-tag" style="background:${colorMeta.hex}22;font-size:10px;padding:2px 7px;">${colorMeta.label}</span>` : ''}
+          </div>
+          <div class="poop-cal-log-extra">⏱ ${_fmtDuration(log.duration)}${feelingsStr ? ' · ' + feelingsStr : ''}${log.note ? ' · ' + escAttr(log.note) : ''}</div>
+        </div>
+        <div class="poop-cal-log-actions">
+          <div class="poop-cal-edit-btn" onclick="openPoopLogEdit(${log.id})" title="编辑">✏️</div>
+          <div class="poop-cal-del-btn" onclick="deletePoopLogFromCal(${log.id})" title="删除">🗑️</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const isCurrentMonth = (year === new Date().getFullYear() && month === new Date().getMonth());
+
+  container.innerHTML = `
+    <div class="poop-cal-nav">
+      <div class="poop-cal-nav-btn" onclick="poopCalPrev()">‹</div>
+      <div class="poop-cal-month">${year}年${month+1}月</div>
+      <div class="poop-cal-nav-btn" id="poop-cal-next-btn" onclick="poopCalNext()" style="${isCurrentMonth?'opacity:.35;pointer-events:none;':''}">›</div>
+    </div>
+    <div class="poop-cal-summary">
+      <div style="font-size:28px;">💩</div>
+      <div>
+        <div style="font-size:13px;font-weight:900;">本月共记录</div>
+        <div style="font-size:22px;font-weight:900;color:var(--o);">${monthTotal} <span style="font-size:13px;color:var(--sub);font-weight:700;">次</span></div>
+      </div>
+      <div style="flex:1;text-align:right;">
+        <button class="btn-y" style="padding:7px 12px;font-size:12px;" onclick="openPoopLogAddForDate('${_poopCalSelDate}')">＋ 补录</button>
+      </div>
+    </div>
+    <div class="poop-cal-grid">
+      ${DOW_LABELS.map(d => `<div class="poop-cal-dow">${d}</div>`).join('')}
+      ${cells}
+    </div>
+    <div class="poop-cal-detail-section">
+      <div class="poop-cal-detail-hdr">
+        <div class="poop-cal-detail-date">📅 ${selDateDisplay}</div>
+        <div style="font-size:12px;color:var(--sub);">${selLogs.length ? selLogs.length + '条记录' : '无记录'}</div>
+      </div>
+      ${detailHTML}
+    </div>
+  `;
+}
+
+function poopCalSelectDate(dateKey) {
+  _poopCalSelDate = dateKey;
+  _renderPoopCalBody();
+}
+
+function poopCalPrev() {
+  _poopCalMonth--;
+  if (_poopCalMonth < 0) { _poopCalMonth = 11; _poopCalYear--; }
+  _poopCalSelDate = null;
+  _renderPoopCalBody();
+}
+
+function poopCalNext() {
+  const now = new Date();
+  if (_poopCalYear > now.getFullYear() || (_poopCalYear === now.getFullYear() && _poopCalMonth >= now.getMonth())) return;
+  _poopCalMonth++;
+  if (_poopCalMonth > 11) { _poopCalMonth = 0; _poopCalYear++; }
+  _poopCalSelDate = null;
+  _renderPoopCalBody();
+}
+
+function _togglePoopCard(id, e) {
+  // Don't toggle when tapping the delete button
+  if (e && e.target.classList.contains('poop-log-del')) return;
+  // Don't toggle when tapping edit button inside expand area
+  if (e && e.target.classList.contains('btn-log-edit')) return;
+  const exp = document.getElementById('plc-exp-' + id);
+  const chev = document.getElementById('plc-chev-' + id);
+  if (!exp) return;
+  const isOpen = exp.classList.contains('open');
+  exp.classList.toggle('open', !isOpen);
+  if (chev) chev.classList.toggle('open', !isOpen);
+}
+function openPoopLogEdit(id) {
+  const log = (S.poopLogs || []).find(l => l.id === id);
+  if (!log) return;
+  _poopSelectedBristol = log.bristol || 4;
+  _poopSelectedColor = log.color || 'brown';
+  _poopSelectedFeelings = [...(log.feeling || [])];
+  // Time
+  const endDate = new Date(log.endTs);
+  const localIso = new Date(endDate.getTime() - endDate.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('poop-form-time').value = localIso;
+  document.getElementById('poop-form-note').value = log.note || '';
+  document.getElementById('poop-edit-id').value = id;
+  document.getElementById('poop-modal-source').value = 'cal_edit';
+  document.getElementById('poop-modal-title').textContent = '✏️ 编辑便便记录';
+  document.getElementById('poop-dur-auto-row').style.display = 'none';
+  document.getElementById('poop-dur-manual-row').style.display = '';
+  document.getElementById('poop-form-dur-min').value = log.duration ? Math.round(log.duration / 60) : '';
+  _buildBristolPicker();
+  _buildPoopColorPicker();
+  _buildFeelingPicker();
+  openModal('modal-poop-log');
+}
+
+// Open add modal pre-filled with a specific date (补录)
+function openPoopLogAddForDate(dateKey) {
+  document.getElementById('poop-edit-id').value = '';
+  document.getElementById('poop-modal-source').value = 'cal_add';
+  document.getElementById('poop-modal-title').textContent = '📝 补录便便';
+  _poopSelectedBristol = 4;
+  _poopSelectedColor = 'brown';
+  _poopSelectedFeelings = [];
+  // Hide auto-dur, show manual minutes input
+  document.getElementById('poop-dur-auto-row').style.display = 'none';
+  document.getElementById('poop-dur-manual-row').style.display = '';
+  document.getElementById('poop-form-dur-min').value = '';
+  // Set datetime to current time by default (user can modify)
+  const _now = new Date();
+  const _localIso = new Date(_now.getTime() - _now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+  document.getElementById('poop-form-time').value = _localIso;
+  document.getElementById('poop-form-note').value = '';
+  _buildBristolPicker();
+  _buildPoopColorPicker();
+  _buildFeelingPicker();
+  openModal('modal-poop-log');
+}
+
+function deletePoopLogFromCal(id) {
+  showCustomConfirm('删除记录', '确认删除这条便便记录吗？', '删除', '#E05050').then(ok => {
+    if (!ok) return;
+    S.poopLogs = (S.poopLogs || []).filter(l => l.id !== id);
+    save();
+    _renderPoopCalBody();
+    showToast('已删除');
+  });
 }
 
 function deletePoopLog(id) {
