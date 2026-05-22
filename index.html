@@ -669,7 +669,7 @@ button{cursor:pointer;background:none;font-family:inherit;}
   display:flex;align-items:center;justify-content:center;
   transition:background .18s,transform .18s var(--ease-spring);}
 .poop-log-del:active{background:#fce4e4;transform:scale(.88);}
-.poop-log-icon{font-size:24px;flex-shrink:0;}
+.poop-log-icon{font-size:24px;flex-shrink:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;}
 .poop-log-info{flex:1;min-width:0;}
 .poop-log-time{font-size:12px;color:var(--sub);}
 .poop-log-row{display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap;}
@@ -779,7 +779,7 @@ button{cursor:pointer;background:none;font-family:inherit;}
 .poop-cal-log-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;
   border-bottom:1px solid #eee;}
 .poop-cal-log-item:last-child{border-bottom:none;padding-bottom:0;}
-.poop-cal-log-icon{font-size:22px;flex-shrink:0;margin-top:2px;}
+.poop-cal-log-icon{font-size:22px;flex-shrink:0;margin-top:2px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;}
 .poop-cal-log-info{flex:1;min-width:0;}
 .poop-cal-log-time{font-size:12px;font-weight:800;margin-bottom:4px;}
 .poop-cal-log-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:3px;}
@@ -1182,8 +1182,13 @@ button{cursor:pointer;background:none;font-family:inherit;}
       <input type="text" id="poop-form-dur" readonly style="background:#f5f5f5;color:var(--sub);">
     </div>
     <div class="field" id="poop-dur-manual-row" style="display:none;">
-      <label>⏱️ 时长（分钟，选填）</label>
-      <input type="number" id="poop-form-dur-min" min="0" max="999" placeholder="留空则不记录时长" style="width:100%;">
+      <label>⏱️ 时长（选填）</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="number" id="poop-form-dur-min" min="0" max="999" placeholder="分" style="flex:1;text-align:center;" title="分钟">
+        <span style="font-size:13px;font-weight:700;color:var(--sub);">分</span>
+        <input type="number" id="poop-form-dur-sec" min="0" max="59" placeholder="秒" style="flex:1;text-align:center;" title="秒">
+        <span style="font-size:13px;font-weight:700;color:var(--sub);">秒</span>
+      </div>
     </div>
     <div class="field">
       <label>🕐 时间（可补录）</label>
@@ -4830,8 +4835,56 @@ const BRISTOL_ANALYSIS = [
   {status:'🔴 偏稀/腹泻', cls:'tag-red', tip:'注意补充水分和电解质，持续建议就医'},
 ];
 
+// Returns an SVG poop emoji string with different face expressions based on bristol health status
+function _poopIconSvg(bristol) {
+  const a = BRISTOL_ANALYSIS[bristol] || BRISTOL_ANALYSIS[4];
+  if (a.cls === 'tag-green') {
+    // Happy poop (ideal)
+    return `<svg width="28" height="28" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="18" cy="22" rx="13" ry="11" fill="#8B5E3C"/>
+      <ellipse cx="18" cy="14" rx="9" ry="9" fill="#8B5E3C"/>
+      <ellipse cx="18" cy="8" rx="5" ry="5.5" fill="#8B5E3C"/>
+      <ellipse cx="18" cy="22" rx="12" ry="10" fill="#A0724A"/>
+      <ellipse cx="18" cy="14" rx="8" ry="8" fill="#A0724A"/>
+      <ellipse cx="18" cy="8" rx="4" ry="5" fill="#A0724A"/>
+      <circle cx="14.5" cy="20" r="1.5" fill="#3a2010"/>
+      <circle cx="21.5" cy="20" r="1.5" fill="#3a2010"/>
+      <path d="M14 24 Q18 27.5 22 24" stroke="#3a2010" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </svg>`;
+  } else if (a.cls === 'tag-yellow') {
+    // Neutral poop (ok)
+    return `<svg width="28" height="28" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="18" cy="22" rx="13" ry="11" fill="#8B5E3C"/>
+      <ellipse cx="18" cy="14" rx="9" ry="9" fill="#8B5E3C"/>
+      <ellipse cx="18" cy="8" rx="5" ry="5.5" fill="#8B5E3C"/>
+      <ellipse cx="18" cy="22" rx="12" ry="10" fill="#A0724A"/>
+      <ellipse cx="18" cy="14" rx="8" ry="8" fill="#A0724A"/>
+      <ellipse cx="18" cy="8" rx="4" ry="5" fill="#A0724A"/>
+      <circle cx="14.5" cy="20" r="1.5" fill="#3a2010"/>
+      <circle cx="21.5" cy="20" r="1.5" fill="#3a2010"/>
+      <line x1="14" y1="25" x2="22" y2="25" stroke="#3a2010" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`;
+  } else {
+    // Sad poop (constipation or diarrhea)
+    return `<svg width="28" height="28" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="18" cy="22" rx="13" ry="11" fill="#8B5E3C"/>
+      <ellipse cx="18" cy="14" rx="9" ry="9" fill="#8B5E3C"/>
+      <ellipse cx="18" cy="8" rx="5" ry="5.5" fill="#8B5E3C"/>
+      <ellipse cx="18" cy="22" rx="12" ry="10" fill="#A0724A"/>
+      <ellipse cx="18" cy="14" rx="8" ry="8" fill="#A0724A"/>
+      <ellipse cx="18" cy="8" rx="4" ry="5" fill="#A0724A"/>
+      <circle cx="14.5" cy="19.5" r="1.5" fill="#3a2010"/>
+      <circle cx="21.5" cy="19.5" r="1.5" fill="#3a2010"/>
+      <path d="M14 26.5 Q18 23 22 26.5" stroke="#3a2010" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M13 17.5 Q14.5 16 16 17.5" stroke="#3a2010" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M20 17.5 Q21.5 16 23 17.5" stroke="#3a2010" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    </svg>`;
+  }
+}
+
 // Timer state
 let _poopStartTs = null;    // absolute timestamp stored in localStorage
+let _poopEndTs = null;      // timestamp when timer was stopped (for accurate duration save)
 let _poopTimerRaf = null;
 let _poopSaving = false;
 let _poopSelectedBristol = 4;
@@ -4975,6 +5028,7 @@ function cancelPoopConfirm() {
 /* ---- open log modal ---- */
 function openPoopLogModal() {
   const endTs = Date.now();
+  _poopEndTs = endTs;  // store for accurate save
   const dur = Math.max(0, Math.floor((endTs - (_poopStartTs || endTs)) / 1000));
   document.getElementById('poop-form-dur').value = _fmtDuration(dur) + '（时间可在下方调整）';
   document.getElementById('poop-form-dur').readOnly = true;
@@ -5084,7 +5138,10 @@ function savePoopLog() {
 
   // Read manual duration (used in cal_edit and cal_add)
   const manualMinStr = document.getElementById('poop-form-dur-min').value;
-  const manualDur = manualMinStr !== '' ? Math.max(0, Math.round(parseFloat(manualMinStr) * 60)) : null;
+  const manualSecStr = (document.getElementById('poop-form-dur-sec') || {}).value || '';
+  const manualDur = (manualMinStr !== '' || manualSecStr !== '')
+    ? Math.max(0, Math.round(parseFloat(manualMinStr || '0') * 60) + Math.max(0, Math.min(59, parseInt(manualSecStr || '0'))))
+    : null;
 
   if (!S.poopLogs) S.poopLogs = [];
 
@@ -5148,13 +5205,14 @@ function savePoopLog() {
   }
 
   // ── TIMER (normal) MODE ──
-  const actualStart = _poopStartTs || (userEndTs - 60000);
-  const dur = Math.max(0, Math.floor((userEndTs - actualStart) / 1000));
+  const actualStart = _poopStartTs || ((_poopEndTs || Date.now()) - 60000);
+  const actualEnd = _poopEndTs || Date.now();
+  const dur = Math.max(0, Math.floor((actualEnd - actualStart) / 1000));
 
   const log = {
     id: Date.now(),
     startTs: actualStart,
-    endTs: userEndTs,
+    endTs: actualEnd,
     duration: dur,
     bristol: _poopSelectedBristol,
     color: _poopSelectedColor,
@@ -5167,6 +5225,7 @@ function savePoopLog() {
   save();
 
   _poopStartTs = null;
+  _poopEndTs = null;
   localStorage.removeItem('poop_startTs');
 
   closeModal('modal-poop-log');
@@ -5356,7 +5415,7 @@ function _renderPoopLogList(logs) {
       : `<div class="poop-log-expand-note-empty">无备注</div>`;
     return `<div class="poop-log-card" id="plc-${log.id}" onclick="_togglePoopCard(${log.id}, event)">
       <div class="poop-log-card-row">
-        <div class="poop-log-icon">💩</div>
+        <div class="poop-log-icon">${_poopIconSvg(log.bristol)}</div>
         <div class="poop-log-info">
           <div class="poop-log-time">${timeStr} <span class="poop-log-chevron" id="plc-chev-${log.id}">▾</span></div>
           <div class="poop-log-row">
@@ -5475,7 +5534,7 @@ function _renderPoopCalBody() {
         ? log.feeling.map(f => feelingLabels[f] || f).join(' ')
         : '';
       return `<div class="poop-cal-log-item">
-        <div class="poop-cal-log-icon">💩</div>
+        <div class="poop-cal-log-icon">${_poopIconSvg(log.bristol)}</div>
         <div class="poop-cal-log-info">
           <div class="poop-cal-log-time">${timeStr}</div>
           <div class="poop-cal-log-tags">
@@ -5574,7 +5633,9 @@ function openPoopLogEdit(id) {
   document.getElementById('poop-modal-title').textContent = '✏️ 编辑便便记录';
   document.getElementById('poop-dur-auto-row').style.display = 'none';
   document.getElementById('poop-dur-manual-row').style.display = '';
-  document.getElementById('poop-form-dur-min').value = log.duration ? Math.round(log.duration / 60) : '';
+  document.getElementById('poop-form-dur-min').value = log.duration ? Math.floor(log.duration / 60) : '';
+  const secEl = document.getElementById('poop-form-dur-sec');
+  if (secEl) secEl.value = log.duration ? (log.duration % 60) : '';
   _buildBristolPicker();
   _buildPoopColorPicker();
   _buildFeelingPicker();
@@ -5593,6 +5654,8 @@ function openPoopLogAddForDate(dateKey) {
   document.getElementById('poop-dur-auto-row').style.display = 'none';
   document.getElementById('poop-dur-manual-row').style.display = '';
   document.getElementById('poop-form-dur-min').value = '';
+  const _secEl = document.getElementById('poop-form-dur-sec');
+  if (_secEl) _secEl.value = '';
   // Set datetime to current time by default (user can modify)
   const _now = new Date();
   const _localIso = new Date(_now.getTime() - _now.getTimezoneOffset()*60000).toISOString().slice(0,16);
