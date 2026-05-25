@@ -1553,7 +1553,7 @@ button{cursor:pointer;background:none;font-family:inherit;}
     <div class="hdr-title">📓 随记</div>
     <button class="btn-y" style="padding:7px 14px;font-size:12px;" onclick="diaryNewEntry()">＋ 新建</button>
   </div>
-  <div style="padding:12px 16px 0;background:transparent;border-bottom:1.5px solid rgba(0,0,0,.07);backdrop-filter:blur(4px);">
+  <div class="diary-panel-tabs-wrap" style="padding:12px 16px 0;background:var(--card);border-bottom:1.5px solid rgba(0,0,0,.07);">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
       <div class="diary-panel-tabs" style="flex:1;">
         <div class="diary-tab active" id="dtab-list" onclick="switchDiaryTab('list')">📋 日记列表</div>
@@ -3908,7 +3908,7 @@ function importData(e){
       // Security: whitelist allowed fields — prevents malicious JSON from overwriting arbitrary state
       const ALLOWED_IMPORT_KEYS=['habits','wishes','spinItems','flipItems','secretItems',
         'diaryEntries','records','ledger','pts','nick','avatar','avatarImg',
-        'bgId','bgCustom','poopLogs'];
+        'bgId','bgCustom','poopLogs','secretLogs','ledgerColors'];
       const safe={};
       ALLOWED_IMPORT_KEYS.forEach(k=>{if(k in d)safe[k]=d[k];});
       S=Object.assign(S,safe);
