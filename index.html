@@ -32,7 +32,7 @@ html{background:var(--bg);}/* prevent white strip outside body on desktop */
 body.has-bg::before{content:'';position:absolute;inset:0;z-index:-1;
   background-image:var(--bg-img,none);background-size:cover;background-position:center;
   opacity:.88;pointer-events:none;}
-body.has-bg{background:transparent!important;}
+body.has-bg{background:transparent!important;} body.has-bg .page{background:transparent;}
 body.has-bg .hcard{background:rgba(255,255,255,.78);backdrop-filter:blur(4px);}
 body.has-bg .card{background:rgba(255,255,255,.82);backdrop-filter:blur(4px);}
 body.has-bg .all-item{background:rgba(255,255,255,.78);backdrop-filter:blur(4px);}
