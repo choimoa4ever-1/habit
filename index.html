@@ -5806,6 +5806,14 @@ initAvatarPage();
 setTimeout(drawSpinner,200);
 _restorePoopTimer();
 _patchSwitchPageForTimer();
+/* ===== 六一儿童节彩蛋 ===== */
+(function(){
+  const now = new Date();
+  if(now.getMonth() === 5 && now.getDate() === 1){ // 6月1日
+    setTimeout(openChildrensDay, 800);
+  }
+})();
+
 /* ===== 彩蛋 ===== */
 (function(){
   let tapCount = 0, tapTimer = null;
@@ -5878,7 +5886,49 @@ function startHearts(){
   }
   loop();
 }
-function stopHearts(){
+function openChildrensDay(){
+  document.getElementById('childrens-day-overlay').style.display = 'flex';
+  startChildrenConfetti();
+}
+function closeChildrensDay(){
+  document.getElementById('childrens-day-overlay').style.display = 'none';
+  if(window._cdAnim){ cancelAnimationFrame(window._cdAnim); window._cdAnim=null; }
+  const c = document.getElementById('cd-canvas');
+  if(c) c.getContext('2d').clearRect(0,0,c.width,c.height);
+}
+function startChildrenConfetti(){
+  const canvas = document.getElementById('cd-canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const colors = ['#F5C842','#F5A623','#e8477a','#7F77DD','#1D9E75','#5DCAA5'];
+  const pieces = Array.from({length:60}, ()=>({
+    x: Math.random()*canvas.width, y: -10-Math.random()*200,
+    w: 7+Math.random()*8, h: 4+Math.random()*5,
+    color: colors[Math.floor(Math.random()*colors.length)],
+    speed: 1.5+Math.random()*2.5, angle: Math.random()*Math.PI*2,
+    spin: (Math.random()-.5)*.12, sway: (Math.random()-.5)*1.5,
+    swayAngle: Math.random()*Math.PI*2,
+    shape: Math.random()>.5?'rect':'circle'
+  }));
+  function loop(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let done=0;
+    pieces.forEach(p=>{
+      p.y+=p.speed; p.swayAngle+=.04; p.x+=Math.sin(p.swayAngle)*p.sway; p.angle+=p.spin;
+      if(p.y>canvas.height+20) done++;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.angle);
+      ctx.fillStyle=p.color; ctx.globalAlpha=.88;
+      if(p.shape==='rect') ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      else{ ctx.beginPath(); ctx.arc(0,0,p.w/2,0,Math.PI*2); ctx.fill(); }
+      ctx.restore();
+    });
+    if(done<pieces.length) window._cdAnim=requestAnimationFrame(loop);
+    else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  loop();
+}
+
   if(_heartAnim){ cancelAnimationFrame(_heartAnim); _heartAnim=null; }
   const canvas = document.getElementById('heart-canvas');
   if(canvas) canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
@@ -5934,6 +5984,22 @@ function stopHearts(){
   </div>
 </div>
 
+<!-- 六一儿童节彩蛋 -->
+<div id="childrens-day-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.72);align-items:center;justify-content:center;">
+  <canvas id="cd-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
+  <div style="position:relative;z-index:2;background:#FFFDF8;border:2.5px solid #2C2C2C;border-radius:28px;box-shadow:6px 6px 0 #2C2C2C;padding:28px 22px 24px;max-width:320px;width:calc(100% - 48px);text-align:center;">
+    <button onclick="closeChildrensDay()" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:#FDE8C8;border:1.5px solid #2C2C2C;font-size:13px;cursor:pointer;">✕</button>
+    <div style="font-size:44px;margin-bottom:6px;">🎈</div>
+    <div style="font-size:16px;font-weight:700;color:#2C2C2C;margin-bottom:4px;">六一儿童节快乐！</div>
+    <div style="font-size:12px;color:#999;margin-bottom:16px;">2026.06.01</div>
+    <div style="font-size:13px;line-height:1.85;color:#2C2C2C;text-align:left;background:#FAF8F3;border-radius:14px;border:1.5px solid #E8E0D0;padding:12px 14px;margin-bottom:16px;">
+      小宝，儿童节快乐！🎉<br>
+      不管长多大，你永远是我的小朋友。<br><br>
+      今天要开心、要吃糖、要撒娇～<br>
+      宝贝节日快乐 🍬
+    </div>
+    <div style="font-size:12px;color:#999;text-align:right;">—— Leo</div>
+  </div>
+</div>
 
-</body>
-</html>
+
