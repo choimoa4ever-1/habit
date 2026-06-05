@@ -5806,11 +5806,13 @@ initAvatarPage();
 setTimeout(drawSpinner,200);
 _restorePoopTimer();
 _patchSwitchPageForTimer();
-/* ===== 六一儿童节彩蛋 ===== */
+/* ===== 每日彩蛋（每天第一次打开时显示） ===== */
 (function(){
-  const now = new Date();
-  if(now.getMonth() === 5 && now.getDate() === 1){ // 6月1日
-    setTimeout(openChildrensDay, 800);
+  const today = new Date().toISOString().slice(0,10); // 格式 "YYYY-MM-DD"
+  const key = 'daily_egg_shown_' + today;
+  if(!localStorage.getItem(key)){
+    localStorage.setItem(key, '1');
+    setTimeout(openDailyEgg, 800);
   }
 })();
 
@@ -5886,18 +5888,18 @@ function startHearts(){
   }
   loop();
 }
-function openChildrensDay(){
-  document.getElementById('childrens-day-overlay').style.display = 'flex';
-  startChildrenConfetti();
+function openDailyEgg(){
+  document.getElementById('daily-egg-overlay').style.display = 'flex';
+  startDailyEggConfetti();
 }
-function closeChildrensDay(){
-  document.getElementById('childrens-day-overlay').style.display = 'none';
-  if(window._cdAnim){ cancelAnimationFrame(window._cdAnim); window._cdAnim=null; }
-  const c = document.getElementById('cd-canvas');
+function closeDailyEgg(){
+  document.getElementById('daily-egg-overlay').style.display = 'none';
+  if(window._dailyEggAnim){ cancelAnimationFrame(window._dailyEggAnim); window._dailyEggAnim=null; }
+  const c = document.getElementById('daily-egg-canvas');
   if(c) c.getContext('2d').clearRect(0,0,c.width,c.height);
 }
-function startChildrenConfetti(){
-  const canvas = document.getElementById('cd-canvas');
+function startDailyEggConfetti(){
+  const canvas = document.getElementById('daily-egg-canvas');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   const ctx = canvas.getContext('2d');
@@ -5923,7 +5925,7 @@ function startChildrenConfetti(){
       else{ ctx.beginPath(); ctx.arc(0,0,p.w/2,0,Math.PI*2); ctx.fill(); }
       ctx.restore();
     });
-    if(done<pieces.length) window._cdAnim=requestAnimationFrame(loop);
+    if(done<pieces.length) window._dailyEggAnim=requestAnimationFrame(loop);
     else ctx.clearRect(0,0,canvas.width,canvas.height);
   }
   loop();
@@ -5985,20 +5987,23 @@ function stopHearts(){
   </div>
 </div>
 
-<!-- 六一儿童节彩蛋 -->
-<div id="childrens-day-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.72);align-items:center;justify-content:center;">
-  <canvas id="cd-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
+<!-- 每日彩蛋弹窗 -->
+<!-- ★ 只需修改下方内容即可更新彩蛋文案，emoji、标题、正文、署名均可自由编辑 ★ -->
+<div id="daily-egg-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.72);align-items:center;justify-content:center;">
+  <canvas id="daily-egg-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></canvas>
   <div style="position:relative;z-index:2;background:#FFFDF8;border:2.5px solid #2C2C2C;border-radius:28px;box-shadow:6px 6px 0 #2C2C2C;padding:28px 22px 24px;max-width:320px;width:calc(100% - 48px);text-align:center;">
-    <button onclick="closeChildrensDay()" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:#FDE8C8;border:1.5px solid #2C2C2C;font-size:13px;cursor:pointer;">✕</button>
-    <div style="font-size:44px;margin-bottom:6px;">🎈</div>
-    <div style="font-size:16px;font-weight:700;color:#2C2C2C;margin-bottom:4px;">六一儿童节快乐！</div>
-    <div style="font-size:12px;color:#999;margin-bottom:16px;">2026.06.01</div>
+    <button onclick="closeDailyEgg()" style="position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:#FDE8C8;border:1.5px solid #2C2C2C;font-size:13px;cursor:pointer;">✕</button>
+    <!-- 顶部 emoji（可修改） -->
+    <div style="font-size:44px;margin-bottom:6px;">☀️</div>
+    <!-- 标题（可修改） -->
+    <div style="font-size:16px;font-weight:700;color:#2C2C2C;margin-bottom:16px;">嗨，小宝，早上好～</div>
+    <!-- 正文（可修改，支持 <br> 换行） -->
     <div style="font-size:13px;line-height:1.85;color:#2C2C2C;text-align:left;background:#FAF8F3;border-radius:14px;border:1.5px solid #E8E0D0;padding:12px 14px;margin-bottom:16px;">
-      小宝，儿童节快乐！🎉<br>
-      不管长多大，你永远是我的小朋友。<br><br>
-      喜欢修宝的小纸条，今天要开心，以后也要开心！～<br>
-      修宝节日快乐 🍬
+      新的一天开始啦！🌸<br>
+      记得好好吃早饭，喝水，保护好自己。<br><br>
+      今天也要开开心心的哦，宝贝加油！💪
     </div>
+    <!-- 署名（可修改） -->
     <div style="font-size:12px;color:#999;text-align:right;">—— Leo</div>
   </div>
 </div>
