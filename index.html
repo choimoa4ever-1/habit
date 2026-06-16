@@ -763,14 +763,16 @@ button{cursor:pointer;background:none;font-family:inherit;}
 .poop-cal-dow{text-align:center;font-size:10px;font-weight:700;color:var(--sub);padding:4px 0 6px;}
 .poop-cal-cell{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;
   align-items:center;justify-content:center;cursor:pointer;position:relative;
-  transition:background .15s,transform .2s var(--ease-spring);padding:2px 0;}
+  transition:transform .2s var(--ease-spring);padding:2px 0;}
 .poop-cal-cell:active{transform:scale(.88);}
-.poop-cal-cell.today{border:2px solid var(--o);}
-.poop-cal-cell.has-log{background:var(--ol);}
-.poop-cal-cell.selected{background:var(--y);box-shadow:2px 2px 0 var(--bdr);}
+.poop-cal-cell.today::after{content:'';position:absolute;inset:1px;border-radius:8px;border:2px solid var(--o);pointer-events:none;z-index:2;}
+.poop-cal-cell.selected::after{content:'';position:absolute;inset:1px;border-radius:8px;border:2.5px solid var(--bdr);pointer-events:none;z-index:2;box-shadow:2px 2px 0 var(--bdr);}
 .poop-cal-cell.empty-day{opacity:0;pointer-events:none;}
-.poop-cal-day-num{font-size:11px;font-weight:700;line-height:1;}
-.poop-cal-emoji{font-size:9px;line-height:1;margin-top:1px;letter-spacing:-1px;}
+.poop-cal-day-num{font-size:11px;font-weight:700;line-height:1;position:relative;z-index:1;}
+.poop-cal-emoji{font-size:9px;line-height:1;margin-top:1px;letter-spacing:-1px;position:relative;z-index:1;}
+/* Pie circle for poop cal */
+.poop-cal-pie{position:absolute;inset:3px;border-radius:50%;overflow:hidden;z-index:0;}
+.poop-cal-pie svg{width:100%;height:100%;display:block;}
 .poop-cal-summary{background:var(--card);border:2px solid var(--bdr);border-radius:16px;
   padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;
   box-shadow:3px 3px 0 var(--bdr);}
@@ -5451,18 +5453,52 @@ function renderPoopCal() {
   _renderPoopCalBody();
 }
 
+// Returns 'green'|'yellow'|'red' for a bristol type
+function _bristolColor(bristol) {
+  if (bristol === 3 || bristol === 4) return 'green';
+  if (bristol === 5) return 'yellow';
+  return 'red';
+}
+
+// Build a pie SVG string for an array of color strings ['green','red',...]
+function _poopPieSvg(colors) {
+  if (!colors || colors.length === 0) return '';
+  const colorMap = { green: '#4CAF50', yellow: '#F5C842', red: '#F44336' };
+  const n = colors.length;
+  if (n === 1) {
+    return `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="16" fill="${colorMap[colors[0]] || '#ccc'}"/>
+    </svg>`;
+  }
+  const cx = 16, cy = 16, r = 16;
+  const sliceAngle = (2 * Math.PI) / n;
+  let paths = '';
+  for (let i = 0; i < n; i++) {
+    const startAngle = i * sliceAngle - Math.PI / 2;
+    const endAngle = startAngle + sliceAngle;
+    const x1 = cx + r * Math.cos(startAngle);
+    const y1 = cy + r * Math.sin(startAngle);
+    const x2 = cx + r * Math.cos(endAngle);
+    const y2 = cy + r * Math.sin(endAngle);
+    const largeArc = sliceAngle > Math.PI ? 1 : 0;
+    paths += `<path d="M${cx},${cy} L${x1.toFixed(2)},${y1.toFixed(2)} A${r},${r} 0 ${largeArc},1 ${x2.toFixed(2)},${y2.toFixed(2)} Z" fill="${colorMap[colors[i]] || '#ccc'}"/>`;
+  }
+  return `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">${paths}</svg>`;
+}
+
 function _renderPoopCalBody() {
   const container = document.getElementById('poop-cal-body');
   if (!container) return;
   const today = todayKey();
   const logs = S.poopLogs || [];
 
-  // Build map: dateKey -> count
-  const countByDate = {};
+  // Build map: dateKey -> array of bristol values
+  const bristolsByDate = {};
   logs.forEach(l => {
     const d = new Date(l.endTs);
     const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    countByDate[k] = (countByDate[k] || 0) + 1;
+    if (!bristolsByDate[k]) bristolsByDate[k] = [];
+    bristolsByDate[k].push(l.bristol);
   });
 
   const year = _poopCalYear;
@@ -5494,21 +5530,30 @@ function _renderPoopCalBody() {
   }
   for (let d = 1; d <= daysInMonth; d++) {
     const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const count = countByDate[dateKey] || 0;
+    const bristols = bristolsByDate[dateKey] || [];
+    const count = bristols.length;
     const isToday = dateKey === today;
     const isSel = dateKey === _poopCalSelDate;
     const hasLog = count > 0;
     let cls = 'poop-cal-cell';
     if (isSel) cls += ' selected';
-    else if (hasLog) cls += ' has-log';
     if (isToday) cls += ' today';
-    let emojiStr = '';
-    if (count === 1) emojiStr = '💩';
-    else if (count === 2) emojiStr = '💩×2';
-    else if (count >= 3) emojiStr = `💩×${count}`;
+
+    let pieHtml = '';
+    if (hasLog) {
+      // Sort colors: green first, yellow, red last (for visual consistency)
+      const colorOrder = { green: 0, yellow: 1, red: 2 };
+      const colors = bristols.map(_bristolColor).sort((a, b) => colorOrder[a] - colorOrder[b]);
+      pieHtml = `<div class="poop-cal-pie">${_poopPieSvg(colors)}</div>`;
+    }
+
+    let countLabel = '';
+    if (count >= 2) countLabel = `<div class="poop-cal-emoji">×${count}</div>`;
+
     cells += `<div class="${cls}" onclick="poopCalSelectDate('${dateKey}')">
+      ${pieHtml}
       <div class="poop-cal-day-num">${d}</div>
-      ${emojiStr ? `<div class="poop-cal-emoji">${emojiStr}</div>` : ''}
+      ${countLabel}
     </div>`;
   }
 
